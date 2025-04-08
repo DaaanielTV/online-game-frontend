@@ -1,0 +1,177 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #333;
+}
+
+.game-container {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+}
+
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #fff;
+}
+
+.ui-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: Arial, sans-serif;
+    z-index: 1;
+}
+
+#stats {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#stats div {
+    margin: 5px 0;
+}
+
+.ui-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px;
+}
+
+.ui-button:hover {
+    background: #45a049;
+}
+
+.tutorial {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 300px;
+}
+
+.tutorial h2 {
+    margin-bottom: 10px;
+    color: #4CAF50;
+}
+
+.tutorial ul {
+    list-style-position: inside;
+    padding-left: 10px;
+}
+
+.tutorial li {
+    margin: 5px 0;
+}
+
+.shop-menu {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    min-width: 300px;
+    z-index: 100;
+}
+
+.shop-menu h2 {
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.upgrade-item {
+    margin: 15px 0;
+    padding: 10px;
+    border: 1px solid #4CAF50;
+    border-radius: 5px;
+}
+
+.upgrade-item h3 {
+    color: #4CAF50;
+}
+
+.upgrade-item button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.upgrade-item button:hover {
+    background: #45a049;
+}
+
+.death-screen {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.death-content {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+}
+
+.death-content h2 {
+    color: #ff4444;
+    margin-bottom: 20px;
+}
+
+.death-content button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+.death-content button:hover {
+    background: #45a049;
+}
