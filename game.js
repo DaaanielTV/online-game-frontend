@@ -74,15 +74,26 @@ class Game {
         // Add walls array
         this.walls = [];
 
+        // Wave system
+        this.wave = 1;
+        this.enemiesPerWave = 3;
+        this.enemiesRemaining = this.enemiesPerWave;
+        this.waveDelay = 5000; // 5 seconds between waves
+        this.lastWaveTime = 0;
+        this.isWaveInProgress = false;
+
+        // Images container
+        this.images = {};
+
         // Load images and start game
         this.loadImages({
-            background: 'enemy/game-background.png',
-            player: 'enemy/player-avatar.png',
-            elephant: 'enemy/elephant.png',
-            trader: 'enemy/the-trader.png',
-            monster: 'enemy/tricaluctus(underwater-monster).png',
-            arrow: 'enemy/arrow.png',
-            wall: 'enemy/wall.png'
+            background: './enemy/game-background.png',
+            player: './enemy/player-avatar.png',
+            elephant: './enemy/elephant.png',
+            trader: './enemy/the-trader.png',
+            monster: './enemy/tricaluctus(underwater-monster).png',
+            arrow: './enemy/arrow.png',
+            wall: './enemy/wall.png'
         });
 
         // Input handling
@@ -97,61 +108,7 @@ class Game {
         // Setup UI handlers
         this.setupShopButton();
 
-        // Power-up system
-        this.powerUps = [];
-        this.powerUpTypes = [
-            { type: 'health', bonus: 1000, duration: 10000 },
-            { type: 'speed', bonus: 2, duration: 5000 },
-            { type: 'invincibility', duration: 3000 }
-        ];
-        this.lastPowerUpSpawn = 0;
-        this.powerUpSpawnInterval = 15000; // 15 seconds
-
-        // Wave system
-        this.wave = 1;
-        this.enemiesPerWave = 3;
-        this.enemiesRemaining = this.enemiesPerWave;
-        this.waveDelay = 5000; // 5 seconds between waves
-        this.lastWaveTime = 0;
-        this.isWaveInProgress = false;
-
-        // Character class system
-        this.characterClasses = {
-            warrior: {
-                baseHealth: 6000,
-                baseDamage: 30,
-                special: 'berserk',
-                description: 'High health and melee damage'
-            },
-            archer: {
-                baseHealth: 4000,
-                baseDamage: 40,
-                special: 'multishot',
-                description: 'High ranged damage and mobility'
-            },
-            mage: {
-                baseHealth: 3500,
-                baseDamage: 50,
-                special: 'frostbolt',
-                description: 'Powerful elemental attacks'
-            }
-        };
-
-        // Time and weather system
-        this.environment = {
-            time: 0, // 0-24 hours
-            dayLength: 300000, // 5 minutes per day
-            weather: 'clear',
-            weatherEffects: ['clear', 'rain', 'storm', 'fog'],
-            lastWeatherChange: 0,
-            weatherDuration: 60000 // 1 minute
-        };
-
-        // Resource nodes
-        this.resources = [];
-        this.resourceTypes = ['wood', 'stone', 'metal', 'herb'];
-
-        // Initialize new systems
+        // Initialize systems
         this.initializeSkillTrees();
         this.initializeQuestSystem();
         this.initializeSoundSystem();
@@ -160,9 +117,7 @@ class Game {
         this.setupLeaderboard();
         this.initializeTutorial();
 
-        // Start game loop
-        this.lastTime = 0;
-        this.gameLoop();
+        // DO NOT start game loop here, it will be started after images load
     }
 
     setupCanvas() {
@@ -176,16 +131,25 @@ class Game {
     }
 
     loadImages(sources) {
+        console.log('Loading images...');
         let loadedImages = 0;
         const totalImages = Object.keys(sources).length;
 
+        const onImageLoad = () => {
+            loadedImages++;
+            console.log(`Loaded ${loadedImages}/${totalImages} images`);
+            if (loadedImages === totalImages) {
+                console.log('All images loaded, starting game');
+                this.startGame();
+            }
+        };
+
         for (const [key, src] of Object.entries(sources)) {
             const img = new Image();
-            img.onload = () => {
-                loadedImages++;
-                if (loadedImages === totalImages) {
-                    this.startGame(); // Changed from this.start()
-                }
+            img.onload = onImageLoad;
+            img.onerror = (e) => {
+                console.error(`Error loading image ${src}:`, e);
+                onImageLoad(); // Continue with game even if image fails
             };
             img.src = src;
             this.images[key] = img;
@@ -198,10 +162,19 @@ class Game {
         this.lastSpawnTime = Date.now();
         this.lastWaveTime = Date.now();
         this.lastTraderSpawn = Date.now();
+        
+        // Clear any existing game state
+        this.entities = [];
+        this.arrows = [];
+        this.entityArrows = [];
+        this.walls = [];
+        
+        // Initialize game elements
         this.spawnWalls();
-        // Start first wave
         this.startNewWave();
+        
         // Start game loop
+        console.log('Starting game loop');
         this.gameLoop();
     }
 
@@ -730,19 +703,29 @@ class Game {
     }
 
     startNewWave() {
+        console.log(`Starting wave ${this.wave}`);
         this.isWaveInProgress = true;
         this.enemiesRemaining = this.enemiesPerWave;
         
         // Spawn initial wave enemies
         for (let i = 0; i < this.enemiesPerWave; i++) {
             const type = this.entityTypes[Math.floor(Math.random() * this.entityTypes.length)];
+            
+            // Spawn enemies away from the player
+            let x, y;
+            do {
+                x = Math.random() * (this.canvas.width - 50);
+                y = Math.random() * (this.canvas.height - 50);
+            } while (Math.hypot(x - this.player.x, y - this.player.y) < 200); // Keep minimum distance from player
+            
             const entity = {
                 type,
-                x: Math.random() * (this.canvas.width - 50),
-                y: Math.random() * (this.canvas.height - 50),
+                x,
+                y,
                 health: 100 + (this.wave * 20), // Health scales with wave
                 damage: 15 + (this.wave * 2), // Damage scales with wave
-                speed: 1 + (this.wave * 0.1) // Speed scales with wave
+                speed: 1 + (this.wave * 0.1), // Speed scales with wave
+                lastShot: 0
             };
             this.entities.push(entity);
         }
@@ -898,9 +881,25 @@ class Game {
             
             // Check spawn time for entities
             const currentTime = Date.now();
-            if (currentTime - this.lastSpawnTime >= this.spawnInterval) {
-                this.spawnEntities();
-                this.lastSpawnTime = currentTime;
+            
+            // Only spawn new wave if current wave is complete
+            if (!this.isWaveInProgress && currentTime - this.lastWaveTime >= this.waveDelay) {
+                console.log('Wave complete, starting next wave');
+                this.wave++;
+                this.startNewWave();
+                this.lastWaveTime = currentTime;
+            }
+            
+            // Spawn trader periodically
+            if (currentTime - this.lastTraderSpawn >= this.traderSpawnInterval) {
+                const trader = {
+                    type: 'trader',
+                    x: Math.random() * (this.canvas.width - 50),
+                    y: Math.random() * (this.canvas.height - 50),
+                    health: 100
+                };
+                this.entities.push(trader);
+                this.lastTraderSpawn = currentTime;
             }
             
             this.spawnPowerUp();
@@ -921,6 +920,8 @@ class Game {
         // Draw background
         if (this.images.background) {
             this.ctx.drawImage(this.images.background, 0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            console.warn('Background image not loaded');
         }
 
         // Draw walls
@@ -1189,6 +1190,28 @@ class Game {
         }
     }
 
+    renderRain() {
+        for (let i = 0; i < 100; i++) {
+            const x = Math.random() * this.canvas.width;
+            const y = Math.random() * this.canvas.height;
+            this.ctx.fillStyle = 'rgba(200, 200, 255, 0.5)';
+            this.ctx.fillRect(x, y, 1, 5);
+        }
+    }
+
+    renderStorm() {
+        this.renderRain();
+        if (Math.random() < 0.1) { // 10% chance of lightning
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+    }
+
+    renderFog() {
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
     renderMinimap() {
         const mapSize = 150;
         const mapX = this.canvas.width - mapSize - 10;
@@ -1249,6 +1272,14 @@ class Game {
                 );
             }
         });
+    }
+
+    showLevelUpNotification() {
+        const levelUp = document.getElementById('levelUp');
+        levelUp.style.display = 'block';
+        setTimeout(() => {
+            levelUp.style.display = 'none';
+        }, 2000);
     }
 }
 window.onload = () => {
