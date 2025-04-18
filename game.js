@@ -74,8 +74,7 @@ class Game {
         // Add walls array
         this.walls = [];
 
-        // Load images
-        this.images = {};
+        // Load images and start game
         this.loadImages({
             background: 'enemy/game-background.png',
             player: 'enemy/player-avatar.png',
@@ -85,9 +84,6 @@ class Game {
             arrow: 'enemy/arrow.png',
             wall: 'enemy/wall.png'
         });
-
-        // Spawn initial walls
-        this.spawnWalls();
 
         // Input handling
         this.keys = {};
@@ -188,12 +184,25 @@ class Game {
             img.onload = () => {
                 loadedImages++;
                 if (loadedImages === totalImages) {
-                    this.start();
+                    this.startGame(); // Changed from this.start()
                 }
             };
             img.src = src;
             this.images[key] = img;
         }
+    }
+
+    startGame() {
+        // Initialize game state
+        this.lastTime = 0;
+        this.lastSpawnTime = Date.now();
+        this.lastWaveTime = Date.now();
+        this.lastTraderSpawn = Date.now();
+        this.spawnWalls();
+        // Start first wave
+        this.startNewWave();
+        // Start game loop
+        this.gameLoop();
     }
 
     setupInputs() {
@@ -886,7 +895,14 @@ class Game {
             this.updatePlayer();
             this.updateEntities();
             this.updateArrows();
-            this.spawnEntities();
+            
+            // Check spawn time for entities
+            const currentTime = Date.now();
+            if (currentTime - this.lastSpawnTime >= this.spawnInterval) {
+                this.spawnEntities();
+                this.lastSpawnTime = currentTime;
+            }
+            
             this.spawnPowerUp();
             this.updatePowerUps();
             this.checkWaveComplete();
