@@ -4,6 +4,26 @@ class Game {
         this.ctx = this.canvas.getContext('2d');
         this.setupCanvas();
 
+        // Initialize arrays first before using them
+        this.entities = [];
+        this.arrows = [];
+        this.entityArrows = [];
+        this.walls = [];
+        this.powerUps = [];
+        this.resources = [];
+        
+        // Power-up system
+        this.powerUpTypes = [
+            { type: 'health', bonus: 1000, duration: 10000 },
+            { type: 'speed', bonus: 2, duration: 5000 },
+            { type: 'invincibility', duration: 3000 }
+        ];
+        this.lastPowerUpSpawn = 0;
+        this.powerUpSpawnInterval = 15000; // 15 seconds
+
+        // Resource types
+        this.resourceTypes = ['wood', 'stone', 'metal', 'herb'];
+
         // Game state
         this.player = {
             x: this.canvas.width / 2,
@@ -57,22 +77,16 @@ class Game {
         };
 
         // Entity system
-        this.entities = [];
         this.entityTypes = ['elephant', 'monster'];
         this.lastSpawnTime = 0;
         this.spawnInterval = 5000; // 5 seconds
 
         // Add arrows array and trader spawn time
-        this.arrows = [];
         this.lastTraderSpawn = 0;
         this.traderSpawnInterval = 30000; // 30 seconds
 
         // Add entity arrows array and shooting cooldown
-        this.entityArrows = [];
         this.entityShootCooldown = 2000; // 2 seconds between shots
-
-        // Add walls array
-        this.walls = [];
 
         // Wave system
         this.wave = 1;
@@ -776,6 +790,11 @@ class Game {
     }
 
     updatePowerUps() {
+        if (!this.powerUps) {
+            this.powerUps = [];
+            return;
+        }
+
         const playerRect = {
             x: this.player.x,
             y: this.player.y,
@@ -1070,15 +1089,27 @@ class Game {
         }));
     }
 
-    // Sound system
+    // Updated sound system initialization
     initializeSoundSystem() {
-        this.sounds = {
-            background: new Audio('sounds/background.mp3'),
-            attack: new Audio('sounds/attack.mp3'),
-            powerup: new Audio('sounds/powerup.mp3'),
-            levelUp: new Audio('sounds/levelup.mp3')
+        this.sounds = {};
+        const soundFiles = {
+            background: 'sounds/background.mp3',
+            attack: 'sounds/attack.mp3',
+            powerup: 'sounds/powerup.mp3',
+            levelUp: 'sounds/levelup.mp3'
         };
-        this.sounds.background.loop = true;
+
+        for (const [key, src] of Object.entries(soundFiles)) {
+            const audio = new Audio();
+            audio.addEventListener('error', () => {
+                console.warn(`Failed to load sound: ${src}`);
+            });
+            audio.src = src;
+            if (key === 'background') {
+                audio.loop = true;
+            }
+            this.sounds[key] = audio;
+        }
     }
 
     // Resource system
@@ -1089,6 +1120,11 @@ class Game {
     }
 
     spawnResource() {
+        if (!this.resourceTypes || !this.resourceTypes.length) {
+            console.warn('Resource types not initialized');
+            return;
+        }
+
         const type = this.resourceTypes[Math.floor(Math.random() * this.resourceTypes.length)];
         const resource = {
             type,
