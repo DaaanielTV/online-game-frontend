@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Wars</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: #2a2a2a;
+            border: 2px solid #3a3a3a;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+        .parts-legend {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .part-type {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .part-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>Robot Wars</h3>
+        <p>Controls:</p>
+        <ul>
+            <li>Arrow keys or WASD to move</li>
+            <li>Left/Right to rotate</li>
+            <li>Space to shoot</li>
+            <li>Destroy enemy robots to score points</li>
+            <li>Protect your robot parts!</li>
+        </ul>
+    </div>
+    <div class="parts-legend">
+        <h3>Robot Parts</h3>
+        <div class="part-type">
+            <div class="part-color" style="background: #8B4513"></div>
+            <span>Chassis (Strong Base)</span>
+        </div>
+        <div class="part-type">
+            <div class="part-color" style="background: #FF4444"></div>
+            <span>Weapon (Attack Power)</span>
+        </div>
+        <div class="part-type">
+            <div class="part-color" style="background: #4444FF"></div>
+            <span>Armor (Extra Health)</span>
+        </div>
+        <div class="part-type">
+            <div class="part-color" style="background: #44FF44"></div>
+            <span>Wheels (Better Speed)</span>
+        </div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script type="module">
+        import RobotWarsGame from './game.js';
+        
+        // Create and start the game
+        const game = new RobotWarsGame('gameCanvas');
+        game.start();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('gameCanvas');
+            canvas.width = Math.min(800, window.innerWidth - 40);
+            canvas.height = Math.min(600, window.innerHeight - 40);
+            game.engine.resize();
+        });
+
+        // Initial resize
+        window.dispatchEvent(new Event('resize'));
+
+        // Prevent scrolling with arrow keys and space
+        window.addEventListener('keydown', (e) => {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

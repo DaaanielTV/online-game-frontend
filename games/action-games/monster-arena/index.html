@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Arena</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #2d2d2d;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: #1a1a1a;
+            border: 2px solid #3a3a3a;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>Monster Arena</h3>
+        <p>Controls:</p>
+        <ul>
+            <li>Arrow keys or WASD to move</li>
+            <li>Space to attack</li>
+            <li>Survive waves of monsters</li>
+            <li>Different monster types:</li>
+            <ul>
+                <li>Red: Normal</li>
+                <li>Green: Fast</li>
+                <li>Blue: Tank</li>
+            </ul>
+        </ul>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script type="module">
+        import MonsterArenaGame from './game.js';
+        
+        // Create and start the game
+        const game = new MonsterArenaGame('gameCanvas');
+        game.start();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('gameCanvas');
+            canvas.width = Math.min(800, window.innerWidth - 40);
+            canvas.height = Math.min(600, window.innerHeight - 40);
+            game.engine.resize();
+        });
+
+        // Initial resize
+        window.dispatchEvent(new Event('resize'));
+
+        // Prevent scrolling with arrow keys and space
+        window.addEventListener('keydown', (e) => {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

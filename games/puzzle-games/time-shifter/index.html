@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Shifter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a2e;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: #0f0f1e;
+            border: 2px solid #2a2a3e;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+        .legend {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .color-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>Time Shifter</h3>
+        <p>Controls:</p>
+        <ul>
+            <li>Arrow Keys to Move</li>
+            <li>Up Arrow to Jump</li>
+            <li>Space to Time Shift</li>
+            <li>R to Reset Level</li>
+        </ul>
+    </div>
+    <div class="legend">
+        <h3>Objects</h3>
+        <div class="legend-item">
+            <div class="color-box" style="background: #4CAF50"></div>
+            <span>Player</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #666666"></div>
+            <span>Platform</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #FFD700"></div>
+            <span>Goal</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #FF4444"></div>
+            <span>Hazard</span>
+        </div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script type="module">
+        import TimeShifterGame from './game.js';
+        
+        // Create and start the game
+        const game = new TimeShifterGame('gameCanvas');
+        game.start();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('gameCanvas');
+            canvas.width = Math.min(800, window.innerWidth - 40);
+            canvas.height = Math.min(600, window.innerHeight - 40);
+            game.engine.resize();
+        });
+
+        // Initial resize
+        window.dispatchEvent(new Event('resize'));
+
+        // Prevent scrolling with arrow keys and space
+        window.addEventListener('keydown', (e) => {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

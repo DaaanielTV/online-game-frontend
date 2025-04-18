@@ -3,130 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stranded Horizons</title>
+    <title>Game Collection</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <div class="ui-overlay">
-            <div id="stats">
-                <div id="health">Health: 5000</div>
-                <div id="stamina">Dash Cooldown: 0s</div>
-                <div id="resources">Score: 0 | Coins: 0</div>
-                <div id="wave-info">Wave: 1</div>
-                <div id="power-up-status"></div>
-                <div id="level">Level: 1</div>
-                <div id="experience">EXP: 0/100</div>
-            </div>
-            <button id="shopButton" class="ui-button">Shop</button>
-        </div>
-
-        <div id="tutorial" class="tutorial">
-            <h2>How to Play</h2>
-            <ul>
-                <li>Move: WASD or Arrow Keys</li>
-                <li>Dash: Press SPACE while moving</li>
-                <li>Shoot: Click to fire arrows</li>
-                <li>Shop: Click shop button to upgrade</li>
-                <li>Power-ups:
-                    <ul>
-                        <li>Red: Health boost</li>
-                        <li>Yellow: Speed boost</li>
-                        <li>Blue: Temporary invincibility</li>
-                    </ul>
-                </li>
-                <li>Waves: Survive increasingly difficult enemy waves</li>
-                <li>Trader: Click on trader to remove 50% of enemies</li>
-            </ul>
-        </div>
-
-        <div id="waveComplete" class="wave-complete" style="display: none;">
-            <h2>Wave Complete!</h2>
-            <p>Wave Bonus: <span id="waveBonus">0</span></p>
-        </div>
-
-        <div id="shop" class="shop-menu">
-            <h2>Upgrade Shop</h2>
-            <div class="shop-content">
-                <p>Your Coins: <span id="currentCoins">0</span></p>
-                <div class="upgrade-item">
-                    <h3>Speed</h3>
-                    <p>Current Level: <span id="currentSpeed">1</span></p>
-                    <p>Cost: <span id="speedPrice">100</span> coins</p>
-                    <button id="upgradeSpeed">Upgrade Speed</button>
-                </div>
-                <div class="upgrade-item">
-                    <h3>Damage</h3>
-                    <p>Current Level: <span id="currentDamage">1</span></p>
-                    <p>Cost: <span id="damagePrice">150</span> coins</p>
-                    <button id="upgradeDamage">Upgrade Damage</button>
-                </div>
-                <div class="upgrade-item">
-                    <h3>Max Health</h3>
-                    <p>Current Level: <span id="currentHealth">1</span></p>
-                    <p>Cost: <span id="healthPrice">200</span> coins</p>
-                    <button id="upgradeHealth">Upgrade Health</button>
-                </div>
-                <div class="upgrade-item">
-                    <h3>Attack Speed</h3>
-                    <p>Current Level: <span id="currentAttackSpeed">1</span></p>
-                    <p>Cost: <span id="attackSpeedPrice">175</span> coins</p>
-                    <button id="upgradeAttackSpeed">Upgrade Attack Speed</button>
+    <div class="container">
+        <h1>Game Collection</h1>
+        
+        <div class="game-grid">
+            <div class="game-category">
+                <h2>Action Games</h2>
+                <div class="game-list">
+                    <a href="games/action-games/space-shooter/index.html" class="game-card">
+                        <h3>Space Shooter</h3>
+                        <p>Classic top-down space combat with upgradeable ships</p>
+                    </a>
+                    <a href="games/action-games/ninja-runner/index.html" class="game-card">
+                        <h3>Ninja Runner</h3>
+                        <p>Fast-paced platformer with wall-jumping and throwing stars</p>
+                    </a>
+                    <a href="games/action-games/monster-arena/index.html" class="game-card">
+                        <h3>Monster Arena</h3>
+                        <p>Battle waves of creatures in a gladiatorial setting</p>
+                    </a>
+                    <a href="games/action-games/robot-wars/index.html" class="game-card">
+                        <h3>Robot Wars</h3>
+                        <p>Build and battle custom robots with modular parts</p>
+                    </a>
                 </div>
             </div>
-        </div>
 
-        <div id="inventory" class="game-window">
-            <h3>Inventory</h3>
-            <div id="inventoryGrid"></div>
-        </div>
-
-        <div id="characterSheet" class="game-window">
-            <h3>Character</h3>
-            <div id="characterStats"></div>
-            <div id="skillTree"></div>
-        </div>
-
-        <div id="questLog" class="game-window">
-            <h3>Quests</h3>
-            <div id="activeQuests"></div>
-            <div id="dailyQuests"></div>
-        </div>
-
-        <div id="minimapContainer">
-            <div id="minimap"></div>
-        </div>
-
-        <div id="classSelection" class="game-window">
-            <h3>Choose Your Class</h3>
-            <div class="class-options">
-                <button class="class-btn" data-class="warrior">Warrior</button>
-                <button class="class-btn" data-class="archer">Archer</button>
-                <button class="class-btn" data-class="mage">Mage</button>
-            </div>
-        </div>
-
-        <div id="notifications">
-            <div id="waveComplete" class="notification">
-                Wave Complete! Bonus: <span id="waveBonus">0</span>
-            </div>
-            <div id="levelUp" class="notification">
-                Level Up!
-            </div>
-            <div id="eventAnnouncement" class="notification">
-                Event Started!
-            </div>
-        </div>
-
-        <div id="deathScreen" class="death-screen">
-            <div class="death-content">
-                <h2>Game Over</h2>
-                <p>Final Score: <span id="finalScore">0</span></p>
-                <button onclick="game.restartGame()">Play Again</button>
+            <div class="game-category">
+                <h2>Puzzle Games</h2>
+                <div class="game-list">
+                    <a href="games/puzzle-games/color-match/index.html" class="game-card">
+                        <h3>Color Match</h3>
+                        <p>Match and combine colors to create art pieces</p>
+                    </a>
+                    <a href="games/puzzle-games/logic-gates/index.html" class="game-card">
+                        <h3>Logic Gates</h3>
+                        <p>Educational puzzle game about digital logic</p>
+                    </a>
+                    <a href="games/puzzle-games/time-shifter/index.html" class="game-card">
+                        <h3>Time Shifter</h3>
+                        <p>Solve puzzles by manipulating time and physics</p>
+                    </a>
+                    <a href="games/puzzle-games/word-scramble/index.html" class="game-card">
+                        <h3>Word Scramble</h3>
+                        <p>Race against time to unscramble challenging words</p>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-    <script src="game.js"></script>
 </body>
 </html>

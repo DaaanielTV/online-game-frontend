@@ -165,3 +165,92 @@ The game uses IndexedDB for client-side storage:
 - Edge 80+
 - Safari 13.1+
 - Opera 67+
+
+
+# Stranded Horizons
+
+A multiplayer survival browser-based game where players fight for survival in a dynamic world filled with challenges and opportunities.
+
+## Quick Start
+```bash
+git clone https://github.com/DaaanielTV/online-game.git
+cd online-game
+```
+
+## Core Features
+- Multiplayer survival gameplay
+- Dynamic combat system with wave-based enemies
+- Character progression and upgrades
+- Resource management and trading
+- Permanent progression via IndexedDB saves
+
+## Controls
+- WASD/Arrow Keys: Movement
+- Mouse Click: Attack/Shoot
+- E: Interact
+- I: Inventory
+- ESC: Menu
+
+## Technical Requirements
+- Modern browser (Chrome 80+, Firefox 75+, Edge 80+, Safari 13.1+)
+- JavaScript enabled
+- 512MB RAM minimum
+- Stable internet connection for multiplayer
+
+## Development Setup
+
+### Local Development
+1. Open in a modern web browser
+2. No additional setup required
+3. IndexedDB automatically initializes
+
+### Production Deployment
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+    root /var/www/html/game;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "public, max-age=3600";
+    }
+
+    # Static asset caching
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+        expires 7d;
+    }
+}
+```
+
+## Game Systems
+
+### Combat
+- Wave-based enemy spawning
+- Progressive difficulty scaling
+- Power-ups and temporary buffs
+- Line of sight mechanics
+
+### Progression
+- Character stats (Speed, Damage, Health, Attack Speed)
+- Experience and leveling system
+- Skill trees and abilities
+- Achievement tracking
+
+### Economy
+- Coin-based currency system
+- Trading with NPCs
+- Resource gathering
+- Crafting system
+
+## Performance
+- Optimized collision detection
+- Asset preloading
+- Efficient game loop
+- Automated save system
+
+## Contributing
+Feel free to submit issues and pull requests. For major changes, please open an issue first.
+
+## License
+[MIT](LICENSE)
