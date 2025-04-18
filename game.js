@@ -11,6 +11,16 @@ class Game {
         this.walls = [];
         this.powerUps = [];
         this.resources = [];
+
+        // Environment system - Add this before other systems
+        this.environment = {
+            time: 0,
+            dayLength: 300000, // 5 minutes per day
+            weather: 'clear',
+            weatherEffects: ['clear', 'rain', 'storm', 'fog'],
+            lastWeatherChange: 0,
+            weatherDuration: 60000 // 1 minute
+        };
         
         // Power-up system
         this.powerUpTypes = [
@@ -1190,6 +1200,8 @@ class Game {
 
     // Environment updates
     updateEnvironment() {
+        if (!this.environment) return; // Safety check
+        
         const now = Date.now();
         // Update day/night cycle
         this.environment.time = (now % this.environment.dayLength) / this.environment.dayLength * 24;
@@ -1204,6 +1216,8 @@ class Game {
     }
 
     renderEnvironmentEffects() {
+        if (!this.environment) return; // Safety check
+        
         // Apply visual effects based on time and weather
         const timeOfDay = this.environment.time;
         const alpha = timeOfDay > 12 ? (timeOfDay - 12) / 12 : 1 - (timeOfDay / 12);
