@@ -17,7 +17,12 @@ class Game {
                 speed: 1,
                 damage: 1
             },
-            coins: 0
+            coins: 0,
+            dashCooldown: 2000, // 2 seconds
+            lastDashTime: 0,
+            isDashing: false,
+            dashSpeed: 15,
+            dashDuration: 150 // milliseconds
         };
 
         this.isGameOver = false;
@@ -74,6 +79,24 @@ class Game {
         // Setup UI handlers
         this.setupShopButton();
 
+        // Power-up system
+        this.powerUps = [];
+        this.powerUpTypes = [
+            { type: 'health', bonus: 1000, duration: 10000 },
+            { type: 'speed', bonus: 2, duration: 5000 },
+            { type: 'invincibility', duration: 3000 }
+        ];
+        this.lastPowerUpSpawn = 0;
+        this.powerUpSpawnInterval = 15000; // 15 seconds
+
+        // Wave system
+        this.wave = 1;
+        this.enemiesPerWave = 3;
+        this.enemiesRemaining = this.enemiesPerWave;
+        this.waveDelay = 5000; // 5 seconds between waves
+        this.lastWaveTime = 0;
+        this.isWaveInProgress = false;
+
         // Start game loop
         this.lastTime = 0;
         this.gameLoop();
@@ -113,6 +136,13 @@ class Game {
         window.addEventListener('keyup', (e) => {
             this.keys[e.key] = false;
         });
+        
+        // Add dash on Space
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                this.tryDash();
+            }
+        });
     }
 
     setupClickHandler() {
@@ -151,10 +181,19 @@ class Game {
         if (this.player.coins >= price) {
             this.player.coins -= price;
             this.player.upgrades[type]++;
-            this.shopPrices[type] = Math.floor(price * 1.5); // Increase price for next upgrade
+            this.shopPrices[type] = Math.floor(price * 1.5);
             
-            if (type === 'speed') {
-                this.player.speed = 5 + this.player.upgrades.speed;
+            switch(type) {
+                case 'speed':
+                    this.player.speed = 5 + this.player.upgrades.speed;
+                    break;
+                case 'health':
+                    this.player.maxHealth = 5000 + (this.player.upgrades.health * 1000);
+                    this.player.health = this.player.maxHealth;
+                    break;
+                case 'attackSpeed':
+                    // Attack speed is handled in shooting controls
+                    break;
             }
             
             this.updateShopUI();
@@ -171,8 +210,23 @@ class Game {
     }
 
     setupShootingControls() {
+        // Add attack speed property if not exists
+        if (!this.player.upgrades.attackSpeed) {
+            this.player.upgrades.attackSpeed = 1;
+        }
+        if (!this.player.lastShot) {
+            this.player.lastShot = 0;
+        }
+
         window.addEventListener('click', (e) => {
             if (this.isGameOver || this.showShop) return;
+
+            const currentTime = Date.now();
+            const shootingCooldown = 500 / this.player.upgrades.attackSpeed; // Base 500ms cooldown, reduced by attack speed
+            
+            if (currentTime - this.player.lastShot < shootingCooldown) {
+                return; // Still on cooldown
+            }
 
             const rect = this.canvas.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
@@ -205,6 +259,8 @@ class Game {
                 width: 40,  // Bigger arrows
                 height: 10
             });
+            
+            this.player.lastShot = currentTime;
         });
     }
 
@@ -288,6 +344,31 @@ class Game {
         }
     }
 
+    tryDash() {
+        const currentTime = Date.now();
+        if (currentTime - this.player.lastDashTime >= this.player.dashCooldown) {
+            this.player.isDashing = true;
+            this.player.lastDashTime = currentTime;
+            
+            // Get dash direction from current movement
+            let dashDirX = 0;
+            let dashDirY = 0;
+            if (this.keys['ArrowUp'] || this.keys['w']) dashDirY = -1;
+            if (this.keys['ArrowDown'] || this.keys['s']) dashDirY = 1;
+            if (this.keys['ArrowLeft'] || this.keys['a']) dashDirX = -1;
+            if (this.keys['ArrowRight'] || this.keys['d']) dashDirX = 1;
+            
+            // Normalize direction
+            const length = Math.sqrt(dashDirX * dashDirX + dashDirY * dashDirY) || 1;
+            this.player.dashDirX = dashDirX / length;
+            this.player.dashDirY = dashDirY / length;
+            
+            setTimeout(() => {
+                this.player.isDashing = false;
+            }, this.player.dashDuration);
+        }
+    }
+
     updatePlayer() {
         const newX = this.player.x;
         const newY = this.player.y;
@@ -322,6 +403,11 @@ class Game {
         // Keep player in bounds
         this.player.x = Math.max(0, Math.min(this.canvas.width - 50, this.player.x));
         this.player.y = Math.max(0, Math.min(this.canvas.height - 50, this.player.y));
+        
+        if (this.player.isDashing) {
+            this.player.x += this.player.dashDirX * this.player.dashSpeed;
+            this.player.y += this.player.dashDirY * this.player.dashSpeed;
+        }
     }
 
     updateEntities() {
@@ -549,22 +635,12 @@ class Game {
     spawnEntities() {
         const currentTime = Date.now();
         
-        // Spawn regular enemies
-        if (currentTime - this.lastSpawnTime >= this.spawnInterval) {
-            for (let i = 0; i < 3; i++) {
-                const type = this.entityTypes[Math.floor(Math.random() * this.entityTypes.length)];
-                const entity = {
-                    type,
-                    x: Math.random() * (this.canvas.width - 50),
-                    y: Math.random() * (this.canvas.height - 50),
-                    health: 100
-                };
-                this.entities.push(entity);
-            }
-            this.lastSpawnTime = currentTime;
+        // Wave-based enemy spawning
+        if (!this.isWaveInProgress && currentTime - this.lastWaveTime >= this.waveDelay) {
+            this.startNewWave();
         }
 
-        // Spawn trader
+        // Trader spawn logic remains the same
         if (currentTime - this.lastTraderSpawn >= this.traderSpawnInterval) {
             const trader = {
                 type: 'trader',
@@ -574,6 +650,107 @@ class Game {
             };
             this.entities.push(trader);
             this.lastTraderSpawn = currentTime;
+        }
+    }
+
+    startNewWave() {
+        this.isWaveInProgress = true;
+        this.enemiesRemaining = this.enemiesPerWave;
+        
+        // Spawn initial wave enemies
+        for (let i = 0; i < this.enemiesPerWave; i++) {
+            const type = this.entityTypes[Math.floor(Math.random() * this.entityTypes.length)];
+            const entity = {
+                type,
+                x: Math.random() * (this.canvas.width - 50),
+                y: Math.random() * (this.canvas.height - 50),
+                health: 100 + (this.wave * 20), // Health scales with wave
+                damage: 15 + (this.wave * 2), // Damage scales with wave
+                speed: 1 + (this.wave * 0.1) // Speed scales with wave
+            };
+            this.entities.push(entity);
+        }
+    }
+
+    checkWaveComplete() {
+        const remainingEnemies = this.entities.filter(e => e.type !== 'trader').length;
+        if (remainingEnemies === 0 && this.isWaveInProgress) {
+            this.wave++;
+            this.enemiesPerWave += 1;
+            this.isWaveInProgress = false;
+            this.lastWaveTime = Date.now();
+            
+            // Calculate and show wave bonus
+            const waveBonus = this.wave * 50;
+            const scoreBonus = this.wave * 100;
+            this.player.coins += waveBonus;
+            this.player.score += scoreBonus;
+            
+            // Show wave completion notification
+            const waveComplete = document.getElementById('waveComplete');
+            document.getElementById('waveBonus').textContent = waveBonus;
+            waveComplete.style.display = 'block';
+            setTimeout(() => {
+                waveComplete.style.display = 'none';
+            }, 2000);
+            
+            this.updateShopUI();
+        }
+    }
+
+    spawnPowerUp() {
+        const currentTime = Date.now();
+        if (currentTime - this.lastPowerUpSpawn >= this.powerUpSpawnInterval) {
+            const powerUpType = this.powerUpTypes[Math.floor(Math.random() * this.powerUpTypes.length)];
+            const powerUp = {
+                type: powerUpType.type,
+                x: Math.random() * (this.canvas.width - 30),
+                y: Math.random() * (this.canvas.height - 30),
+                width: 30,
+                height: 30,
+                bonus: powerUpType.bonus,
+                duration: powerUpType.duration
+            };
+            this.powerUps.push(powerUp);
+            this.lastPowerUpSpawn = currentTime;
+        }
+    }
+
+    updatePowerUps() {
+        const playerRect = {
+            x: this.player.x,
+            y: this.player.y,
+            width: 50,
+            height: 50
+        };
+
+        for (let i = this.powerUps.length - 1; i >= 0; i--) {
+            const powerUp = this.powerUps[i];
+            if (this.checkCollision(playerRect, powerUp)) {
+                this.applyPowerUp(powerUp);
+                this.powerUps.splice(i, 1);
+            }
+        }
+    }
+
+    applyPowerUp(powerUp) {
+        switch (powerUp.type) {
+            case 'health':
+                this.player.health = Math.min(this.player.maxHealth, this.player.health + powerUp.bonus);
+                break;
+            case 'speed':
+                const originalSpeed = this.player.speed;
+                this.player.speed += powerUp.bonus;
+                setTimeout(() => {
+                    this.player.speed = originalSpeed;
+                }, powerUp.duration);
+                break;
+            case 'invincibility':
+                this.player.isInvincible = true;
+                setTimeout(() => {
+                    this.player.isInvincible = false;
+                }, powerUp.duration);
+                break;
         }
     }
 
@@ -599,7 +776,12 @@ class Game {
                 speed: 1,
                 damage: 1
             },
-            coins: 0
+            coins: 0,
+            dashCooldown: 2000, // 2 seconds
+            lastDashTime: 0,
+            isDashing: false,
+            dashSpeed: 15,
+            dashDuration: 150 // milliseconds
         };
         this.entities = [];
         this.arrows = [];
@@ -616,6 +798,9 @@ class Game {
             this.updateEntities();
             this.updateArrows();
             this.spawnEntities();
+            this.spawnPowerUp();
+            this.updatePowerUps();
+            this.checkWaveComplete();
         }
         this.checkGameOver();
     }
@@ -671,6 +856,13 @@ class Game {
             }
         });
 
+        // Draw power-ups
+        this.powerUps.forEach(powerUp => {
+            this.ctx.fillStyle = powerUp.type === 'health' ? 'red' : 
+                               powerUp.type === 'speed' ? 'yellow' : 'blue';
+            this.ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+        });
+
         // Draw player
         if (this.images.player) {
             this.ctx.drawImage(this.images.player, this.player.x, this.player.y, 50, 50);
@@ -678,8 +870,13 @@ class Game {
 
         // Update UI
         document.getElementById('health').textContent = `Health: ${this.player.health}`;
-        document.getElementById('stamina').textContent = `Stamina: ${this.player.stamina}`;
+        document.getElementById('stamina').textContent = `Dash Cooldown: ${Math.ceil(Math.max(0, this.player.dashCooldown - (Date.now() - this.player.lastDashTime)) / 1000)}s`;
         document.getElementById('resources').textContent = `Score: ${this.player.score} | Coins: ${this.player.coins}`;
+
+        // Draw wave information
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '20px Arial';
+        this.ctx.fillText(`Wave: ${this.wave}`, 10, this.canvas.height - 20);
     }
 
     gameLoop(currentTime = 0) {

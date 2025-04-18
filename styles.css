@@ -39,6 +39,33 @@ body {
     z-index: 1;
 }
 
+#wave-info {
+    font-size: 24px;
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+#power-up-status {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.power-up-active {
+    animation: glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4CAF50;
+    }
+    to {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #4CAF50;
+    }
+}
+
 #stats {
     background-color: rgba(0, 0, 0, 0.5);
     padding: 10px;
@@ -135,6 +162,11 @@ body {
     background: #45a049;
 }
 
+.upgrade-item button:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
 .death-screen {
     display: none;
     position: fixed;
@@ -174,4 +206,25 @@ body {
 
 .death-content button:hover {
     background: #45a049;
+}
+
+.wave-complete {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #4CAF50;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    animation: fadeInOut 2s ease-in-out forwards;
+    z-index: 1000;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
 }
