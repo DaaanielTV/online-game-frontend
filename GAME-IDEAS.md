@@ -1,17 +1,8 @@
 # 100 Browser-Based Game Ideas
 
-## Action Games
-1. Space Shooter: Classic top-down space combat with upgradeable ships
-2. Ninja Runner: Fast-paced platformer with wall-jumping and throwing stars
-3. Monster Arena: Battle waves of creatures in a gladiatorial setting
-4. Robot Wars: Build and battle custom robots
-5. Pixel Knight: Retro-style action RPG with procedural dungeons
+# i will remove all finished ideas
 
 ## Puzzle Games
-6. Color Match: Match and combine colors to create art pieces
-7. Logic Gates: Educational puzzle game about digital logic
-8. Time Shifter: Solve puzzles by manipulating time
-9. Pattern Master: Create and solve complex pattern sequences
 10. Block Builder: Physics-based construction puzzle game
 
 ## Strategy Games
