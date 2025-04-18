@@ -2,9 +2,6 @@
 
 # i will remove all finished ideas
 
-## Puzzle Games
-10. Block Builder: Physics-based construction puzzle game
-
 ## Strategy Games
 11. Tiny Empire: Build and manage a miniature kingdom
 12. Space Colony: Manage resources and expand through space
