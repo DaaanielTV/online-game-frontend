@@ -12,10 +12,12 @@
         <div class="ui-overlay">
             <div id="stats">
                 <div id="health">Health: 5000</div>
-                <div id="stamina">Stamina: 100</div>
+                <div id="stamina">Dash Cooldown: 0s</div>
                 <div id="resources">Score: 0 | Coins: 0</div>
                 <div id="wave-info">Wave: 1</div>
                 <div id="power-up-status"></div>
+                <div id="level">Level: 1</div>
+                <div id="experience">EXP: 0/100</div>
             </div>
             <button id="shopButton" class="ui-button">Shop</button>
         </div>
@@ -72,6 +74,48 @@
                     <p>Cost: <span id="attackSpeedPrice">175</span> coins</p>
                     <button id="upgradeAttackSpeed">Upgrade Attack Speed</button>
                 </div>
+            </div>
+        </div>
+
+        <div id="inventory" class="game-window">
+            <h3>Inventory</h3>
+            <div id="inventoryGrid"></div>
+        </div>
+
+        <div id="characterSheet" class="game-window">
+            <h3>Character</h3>
+            <div id="characterStats"></div>
+            <div id="skillTree"></div>
+        </div>
+
+        <div id="questLog" class="game-window">
+            <h3>Quests</h3>
+            <div id="activeQuests"></div>
+            <div id="dailyQuests"></div>
+        </div>
+
+        <div id="minimapContainer">
+            <div id="minimap"></div>
+        </div>
+
+        <div id="classSelection" class="game-window">
+            <h3>Choose Your Class</h3>
+            <div class="class-options">
+                <button class="class-btn" data-class="warrior">Warrior</button>
+                <button class="class-btn" data-class="archer">Archer</button>
+                <button class="class-btn" data-class="mage">Mage</button>
+            </div>
+        </div>
+
+        <div id="notifications">
+            <div id="waveComplete" class="notification">
+                Wave Complete! Bonus: <span id="waveBonus">0</span>
+            </div>
+            <div id="levelUp" class="notification">
+                Level Up!
+            </div>
+            <div id="eventAnnouncement" class="notification">
+                Event Started!
             </div>
         </div>
 

@@ -1,6 +1,17 @@
 # Stranded Horizons
 
+A multiplayer survival browser-based game with dynamic combat and resource management.
+
+## How to Clone
+
+```bash
+git clone https://github.com/DaaanielTV/online-game.git
+cd online-game
+```
+
 ## Game Features
+
+### Existing Features
 - Full screen background with responsive canvas
 - Wave-based combat system with increasing difficulty
 - Power-up system with temporary boosts (health, speed, invincibility)
@@ -14,6 +25,34 @@
 - Trader system for strategic enemy removal
 - Dynamic difficulty scaling
 - Enhanced visual effects and UI feedback
+
+### New Features
+- Elemental damage system (fire, ice, poison) for weapons
+- Character classes with unique abilities (Warrior, Archer, Mage)
+- Experience points and leveling system
+- Day/night cycle affecting gameplay mechanics
+- Weather effects (rain, storm, fog) impacting visibility
+- Inventory system with item management
+- Crafting system for weapons and tools
+- Quest system with rewards
+- Mini-map with fog of war
+- Character skill trees
+- Boss battles with unique mechanics
+- Social features (emotes, chat)
+- Achievement system
+- Daily challenges and rewards
+- Pet system with companion abilities
+- Resource nodes (mining, harvesting)
+- Building system for player bases
+- Player guilds/clans
+- Trading system between players
+- Customizable character appearance
+- Special events and seasonal content
+- Leaderboards and rankings
+- Player statistics tracking
+- Sound effects and background music
+- Tutorial system for new players
+- Checkpoint/save system
 
 ## Setup Instructions
 

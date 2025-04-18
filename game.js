@@ -22,7 +22,29 @@ class Game {
             lastDashTime: 0,
             isDashing: false,
             dashSpeed: 15,
-            dashDuration: 150 // milliseconds
+            dashDuration: 150, // milliseconds
+            class: 'archer',
+            level: 1,
+            experience: 0,
+            experienceToLevel: 100,
+            elements: {
+                fire: 0,
+                ice: 0,
+                poison: 0
+            },
+            inventory: [],
+            maxInventorySize: 20,
+            skills: {},
+            achievements: new Set(),
+            statistics: {
+                enemiesKilled: 0,
+                damageDealt: 0,
+                powerUpsCollected: 0,
+                wavesCompleted: 0
+            },
+            pets: [],
+            activePet: null,
+            guild: null
         };
 
         this.isGameOver = false;
@@ -96,6 +118,51 @@ class Game {
         this.waveDelay = 5000; // 5 seconds between waves
         this.lastWaveTime = 0;
         this.isWaveInProgress = false;
+
+        // Character class system
+        this.characterClasses = {
+            warrior: {
+                baseHealth: 6000,
+                baseDamage: 30,
+                special: 'berserk',
+                description: 'High health and melee damage'
+            },
+            archer: {
+                baseHealth: 4000,
+                baseDamage: 40,
+                special: 'multishot',
+                description: 'High ranged damage and mobility'
+            },
+            mage: {
+                baseHealth: 3500,
+                baseDamage: 50,
+                special: 'frostbolt',
+                description: 'Powerful elemental attacks'
+            }
+        };
+
+        // Time and weather system
+        this.environment = {
+            time: 0, // 0-24 hours
+            dayLength: 300000, // 5 minutes per day
+            weather: 'clear',
+            weatherEffects: ['clear', 'rain', 'storm', 'fog'],
+            lastWeatherChange: 0,
+            weatherDuration: 60000 // 1 minute
+        };
+
+        // Resource nodes
+        this.resources = [];
+        this.resourceTypes = ['wood', 'stone', 'metal', 'herb'];
+
+        // Initialize new systems
+        this.initializeSkillTrees();
+        this.initializeQuestSystem();
+        this.initializeSoundSystem();
+        this.spawnInitialResources();
+        this.initializeEventSystem();
+        this.setupLeaderboard();
+        this.initializeTutorial();
 
         // Start game loop
         this.lastTime = 0;
@@ -781,7 +848,29 @@ class Game {
             lastDashTime: 0,
             isDashing: false,
             dashSpeed: 15,
-            dashDuration: 150 // milliseconds
+            dashDuration: 150, // milliseconds
+            class: 'archer',
+            level: 1,
+            experience: 0,
+            experienceToLevel: 100,
+            elements: {
+                fire: 0,
+                ice: 0,
+                poison: 0
+            },
+            inventory: [],
+            maxInventorySize: 20,
+            skills: {},
+            achievements: new Set(),
+            statistics: {
+                enemiesKilled: 0,
+                damageDealt: 0,
+                powerUpsCollected: 0,
+                wavesCompleted: 0
+            },
+            pets: [],
+            activePet: null,
+            guild: null
         };
         this.entities = [];
         this.arrows = [];
@@ -801,6 +890,10 @@ class Game {
             this.spawnPowerUp();
             this.updatePowerUps();
             this.checkWaveComplete();
+            this.updatePlayerState();
+            this.updateResources();
+            this.updateQuests();
+            this.checkAchievements();
         }
         this.checkGameOver();
     }
@@ -877,6 +970,10 @@ class Game {
         this.ctx.fillStyle = 'white';
         this.ctx.font = '20px Arial';
         this.ctx.fillText(`Wave: ${this.wave}`, 10, this.canvas.height - 20);
+
+        this.renderEnvironmentEffects();
+        this.renderMinimap();
+        this.renderUI();
     }
 
     gameLoop(currentTime = 0) {
@@ -893,9 +990,251 @@ class Game {
         // Game starts when all images are loaded
         this.gameLoop();
     }
-}
 
-// Start the game when the page loads
+    // New method for leveling system
+    gainExperience(amount) {
+        this.player.experience += amount;
+        while (this.player.experience >= this.player.experienceToLevel) {
+            this.levelUp();
+        }
+    }
+
+    levelUp() {
+        this.player.experience -= this.player.experienceToLevel;
+        this.player.level++;
+        this.player.experienceToLevel = Math.floor(this.player.experienceToLevel * 1.5);
+        this.player.maxHealth += 100;
+        this.player.health = this.player.maxHealth;
+        this.showLevelUpNotification();
+    }
+
+    // Initialize skill trees for each class
+    initializeSkillTrees() {
+        this.skillTrees = {
+            warrior: [
+                { id: 'heavyStrike', level: 0, maxLevel: 5, damage: 50 },
+                { id: 'toughness', level: 0, maxLevel: 3, healthBonus: 200 },
+                { id: 'whirlwind', level: 0, maxLevel: 1, unlockLevel: 5 }
+            ],
+            archer: [
+                { id: 'preciseShot', level: 0, maxLevel: 5, critChance: 10 },
+                { id: 'quickDraw', level: 0, maxLevel: 3, attackSpeed: 10 },
+                { id: 'multishot', level: 0, maxLevel: 1, unlockLevel: 5 }
+            ],
+            mage: [
+                { id: 'elementalMastery', level: 0, maxLevel: 5, elementalDamage: 20 },
+                { id: 'manaShield', level: 0, maxLevel: 3, damageReduction: 15 },
+                { id: 'chainLightning', level: 0, maxLevel: 1, unlockLevel: 5 }
+            ]
+        };
+    }
+
+    // Quest system
+    initializeQuestSystem() {
+        this.quests = {
+            daily: [],
+            story: [],
+            achievement: []
+        };
+        this.generateDailyQuests();
+    }
+
+    generateDailyQuests() {
+        const questTypes = [
+            { type: 'kill', count: 20, reward: 100 },
+            { type: 'collect', count: 10, reward: 150 },
+            { type: 'survive', waves: 5, reward: 200 }
+        ];
+        // Reset and generate new daily quests
+        this.quests.daily = questTypes.map(quest => ({
+            ...quest,
+            progress: 0,
+            completed: false
+        }));
+    }
+
+    // Sound system
+    initializeSoundSystem() {
+        this.sounds = {
+            background: new Audio('sounds/background.mp3'),
+            attack: new Audio('sounds/attack.mp3'),
+            powerup: new Audio('sounds/powerup.mp3'),
+            levelUp: new Audio('sounds/levelup.mp3')
+        };
+        this.sounds.background.loop = true;
+    }
+
+    // Resource system
+    spawnInitialResources() {
+        for (let i = 0; i < 10; i++) {
+            this.spawnResource();
+        }
+    }
+
+    spawnResource() {
+        const type = this.resourceTypes[Math.floor(Math.random() * this.resourceTypes.length)];
+        const resource = {
+            type,
+            x: Math.random() * (this.canvas.width - 30),
+            y: Math.random() * (this.canvas.height - 30),
+            amount: Math.floor(Math.random() * 5) + 1
+        };
+        this.resources.push(resource);
+    }
+
+    // Event system
+    initializeEventSystem() {
+        this.events = {
+            current: null,
+            available: [
+                {
+                    name: 'Blood Moon',
+                    duration: 300000,
+                    effect: () => this.startBloodMoonEvent()
+                },
+                {
+                    name: 'Treasure Hunt',
+                    duration: 180000,
+                    effect: () => this.startTreasureHuntEvent()
+                }
+            ]
+        };
+        setInterval(() => this.checkForRandomEvent(), 600000);
+    }
+
+    // Leaderboard system
+    setupLeaderboard() {
+        this.leaderboard = {
+            highScores: [],
+            weeklyBest: [],
+            updateInterval: 60000
+        };
+        setInterval(() => this.updateLeaderboard(), this.leaderboard.updateInterval);
+    }
+
+    // Tutorial system
+    initializeTutorial() {
+        this.tutorial = {
+            steps: [
+                { id: 'movement', completed: false, text: 'Use WASD to move' },
+                { id: 'combat', completed: false, text: 'Click to attack' },
+                { id: 'upgrade', completed: false, text: 'Press U to open upgrades' }
+            ],
+            currentStep: 0,
+            isActive: true
+        };
+    }
+
+    // Update enhanced player state
+    updatePlayerState() {
+        if (this.player.activePet) {
+            this.updatePetBehavior();
+        }
+        this.updateEnvironment();
+        this.checkQuestProgress();
+        this.updateStatistics();
+    }
+
+    // Environment updates
+    updateEnvironment() {
+        const now = Date.now();
+        // Update day/night cycle
+        this.environment.time = (now % this.environment.dayLength) / this.environment.dayLength * 24;
+        
+        // Update weather
+        if (now - this.environment.lastWeatherChange > this.environment.weatherDuration) {
+            this.environment.weather = this.environment.weatherEffects[
+                Math.floor(Math.random() * this.environment.weatherEffects.length)
+            ];
+            this.environment.lastWeatherChange = now;
+        }
+    }
+
+    renderEnvironmentEffects() {
+        // Apply visual effects based on time and weather
+        const timeOfDay = this.environment.time;
+        const alpha = timeOfDay > 12 ? (timeOfDay - 12) / 12 : 1 - (timeOfDay / 12);
+        
+        // Night overlay
+        this.ctx.fillStyle = `rgba(0, 0, 50, ${alpha * 0.5})`;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Weather effects
+        switch (this.environment.weather) {
+            case 'rain':
+                this.renderRain();
+                break;
+            case 'storm':
+                this.renderStorm();
+                break;
+            case 'fog':
+                this.renderFog();
+                break;
+        }
+    }
+
+    renderMinimap() {
+        const mapSize = 150;
+        const mapX = this.canvas.width - mapSize - 10;
+        const mapY = 10;
+        
+        // Draw minimap background
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.fillRect(mapX, mapY, mapSize, mapSize);
+        
+        // Draw entities on minimap
+        this.ctx.fillStyle = 'red';
+        this.entities.forEach(entity => {
+            const minimapX = mapX + (entity.x / this.canvas.width) * mapSize;
+            const minimapY = mapY + (entity.y / this.canvas.height) * mapSize;
+            this.ctx.fillRect(minimapX, minimapY, 3, 3);
+        });
+        
+        // Draw player on minimap
+        this.ctx.fillStyle = 'blue';
+        const playerMinimapX = mapX + (this.player.x / this.canvas.width) * mapSize;
+        const playerMinimapY = mapY + (this.player.y / this.canvas.height) * mapSize;
+        this.ctx.fillRect(playerMinimapX, playerMinimapY, 4, 4);
+    }
+
+    renderUI() {
+        // Draw experience bar
+        const expBarWidth = 200;
+        const expBarHeight = 10;
+        const expBarX = 10;
+        const expBarY = this.canvas.height - 30;
+        
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.fillRect(expBarX, expBarY, expBarWidth, expBarHeight);
+        
+        const expProgress = this.player.experience / this.player.experienceToLevel;
+        this.ctx.fillStyle = 'rgb(0, 255, 200)';
+        this.ctx.fillRect(expBarX, expBarY, expBarWidth * expProgress, expBarHeight);
+        
+        // Draw level
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText(`Level ${this.player.level}`, expBarX, expBarY - 5);
+        
+        // Draw current quests
+        this.renderQuestLog();
+    }
+
+    renderQuestLog() {
+        const questY = 100;
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '14px Arial';
+        this.quests.daily.forEach((quest, index) => {
+            if (!quest.completed) {
+                this.ctx.fillText(
+                    `${quest.type}: ${quest.progress}/${quest.count}`,
+                    10,
+                    questY + (index * 20)
+                );
+            }
+        });
+    }
+}
 window.onload = () => {
     window.game = new Game();
 };
