@@ -7,83 +7,106 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            background-color: #1a1a1a;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
         }
         canvas {
-            background-color: #2a2a2a;
-            border: 2px solid #3a3a3a;
+            background: #111122;
+            border: 2px solid #4444ff;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(68, 68, 255, 0.2);
         }
         .controls {
-            position: fixed;
-            top: 20px;
-            left: 20px;
+            background: rgba(68, 68, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+        }
+        .controls h3 {
+            color: #4444ff;
+            margin-top: 0;
+        }
+        .controls ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .controls li {
+            margin: 10px 0;
+        }
+        .key {
+            background: #4444ff;
+            padding: 2px 8px;
+            border-radius: 4px;
             color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            pointer-events: none;
+            font-weight: bold;
+            margin: 0 5px;
         }
         .parts-legend {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
+            background: rgba(68, 68, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-width: 600px;
+        }
+        .parts-legend h3 {
+            color: #4444ff;
+            margin-top: 0;
         }
         .part-type {
             display: flex;
             align-items: center;
-            margin: 5px 0;
+            margin: 10px 0;
         }
         .part-color {
             width: 20px;
             height: 20px;
             margin-right: 10px;
-            border-radius: 3px;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
+    <h1>Robot Wars</h1>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
     <div class="controls">
-        <h3>Robot Wars</h3>
-        <p>Controls:</p>
+        <h3>Controls</h3>
         <ul>
-            <li>Arrow keys or WASD to move</li>
-            <li>Left/Right to rotate</li>
-            <li>Space to shoot</li>
-            <li>Destroy enemy robots to score points</li>
-            <li>Protect your robot parts!</li>
+            <li><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> or Arrow Keys to move</li>
+            <li><span class="key">Left</span>/<span class="key">Right</span> to rotate</li>
+            <li><span class="key">Space</span> to shoot</li>
         </ul>
+        <p>Build your robot with parts and battle enemy robots!</p>
     </div>
     <div class="parts-legend">
         <h3>Robot Parts</h3>
         <div class="part-type">
             <div class="part-color" style="background: #8B4513"></div>
-            <span>Chassis (Strong Base)</span>
+            <span>Chassis - Strong foundation, high health</span>
         </div>
         <div class="part-type">
             <div class="part-color" style="background: #FF4444"></div>
-            <span>Weapon (Attack Power)</span>
+            <span>Weapon - Increases attack power</span>
         </div>
         <div class="part-type">
             <div class="part-color" style="background: #4444FF"></div>
-            <span>Armor (Extra Health)</span>
+            <span>Armor - Extra protection</span>
         </div>
         <div class="part-type">
             <div class="part-color" style="background: #44FF44"></div>
-            <span>Wheels (Better Speed)</span>
+            <span>Wheels - Better speed and maneuverability</span>
         </div>
     </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script type="module">
         import RobotWarsGame from './game.js';
         

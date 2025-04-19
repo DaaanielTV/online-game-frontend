@@ -101,7 +101,9 @@
 </head>
 <body>
     <h1>Trade Routes</h1>
-    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    </div>
     <div class="tutorial">
         <h3>Trade Empire Management</h3>
         <div class="tutorial-content">
@@ -138,8 +140,9 @@
     <script type="module">
         import TradeRoutesGame from './game.js';
         
-        window.addEventListener('load', () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const game = new TradeRoutesGame('gameCanvas');
+            game.start();
         });
     </script>
 </body>

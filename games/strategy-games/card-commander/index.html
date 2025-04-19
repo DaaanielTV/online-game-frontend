@@ -65,6 +65,25 @@
             position: absolute;
             left: -20px;
         }
+        .card-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card-type {
+            background: rgba(88, 177, 159, 0.1);
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .card-type h4 {
+            color: #58B19F;
+            margin: 0 0 10px 0;
+        }
+        .card-type p {
+            margin: 0;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -81,6 +100,20 @@
             <li>Draw a new card at the start of each turn</li>
             <li>Build powerful combinations between different card types</li>
         </ul>
+        <div class="card-types">
+            <div class="card-type">
+                <h4>Unit Cards</h4>
+                <p>Basic combat units with power and special abilities</p>
+            </div>
+            <div class="card-type">
+                <h4>Commander Cards</h4>
+                <p>Powerful units that enhance your other cards</p>
+            </div>
+            <div class="card-type">
+                <h4>Strategy Cards</h4>
+                <p>Special effects that can turn the tide of battle</p>
+            </div>
+        </div>
     </div>
     <script type="module">
         import CardCommander from './game.js';

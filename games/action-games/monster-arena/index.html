@@ -7,71 +7,69 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            background-color: #2d2d2d;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
         }
         canvas {
-            background-color: #1a1a1a;
-            border: 2px solid #3a3a3a;
+            background: #34495e;
+            border: 2px solid #e74c3c;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.2);
         }
         .controls {
-            position: fixed;
-            top: 20px;
-            left: 20px;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+        }
+        .controls h3 {
+            color: #e74c3c;
+            margin-top: 0;
+        }
+        .controls ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .controls li {
+            margin: 10px 0;
+        }
+        .key {
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 4px;
             color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            pointer-events: none;
+            font-weight: bold;
+            margin: 0 5px;
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <h3>Monster Arena</h3>
-        <p>Controls:</p>
-        <ul>
-            <li>Arrow keys or WASD to move</li>
-            <li>Space to attack</li>
-            <li>Survive waves of monsters</li>
-            <li>Different monster types:</li>
-            <ul>
-                <li>Red: Normal</li>
-                <li>Green: Fast</li>
-                <li>Blue: Tank</li>
-            </ul>
-        </ul>
+    <h1>Monster Arena</h1>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="controls">
+        <h3>Controls</h3>
+        <ul>
+            <li><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> or Arrow Keys to move</li>
+            <li><span class="key">Space</span> to attack</li>
+        </ul>
+        <p>Survive waves of monsters and increase your score!</p>
+    </div>
     <script type="module">
         import MonsterArenaGame from './game.js';
         
-        // Create and start the game
-        const game = new MonsterArenaGame('gameCanvas');
-        game.start();
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const canvas = document.getElementById('gameCanvas');
-            canvas.width = Math.min(800, window.innerWidth - 40);
-            canvas.height = Math.min(600, window.innerHeight - 40);
-            game.engine.resize();
-        });
-
-        // Initial resize
-        window.dispatchEvent(new Event('resize'));
-
-        // Prevent scrolling with arrow keys and space
-        window.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            const game = new MonsterArenaGame('gameCanvas');
+            game.start();
         });
     </script>
 </body>

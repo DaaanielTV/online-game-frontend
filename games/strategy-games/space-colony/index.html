@@ -66,6 +66,28 @@
             margin: 10px 0;
             line-height: 1.4;
         }
+        .module-legend {
+            background: rgba(74, 74, 138, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-width: 600px;
+        }
+        .module-legend h3 {
+            color: #8a8aaa;
+            margin-top: 0;
+        }
+        .module-type {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .module-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -74,16 +96,46 @@
     <div class="controls">
         <!-- Module buttons will be added here by JavaScript -->
     </div>
+    <div class="module-legend">
+        <h3>Module Types</h3>
+        <div class="module-type">
+            <div class="module-color" style="background: #4CAF50"></div>
+            <span>Habitat - Houses colonists</span>
+        </div>
+        <div class="module-type">
+            <div class="module-color" style="background: #00BCD4"></div>
+            <span>Oxygen Generator - Produces oxygen</span>
+        </div>
+        <div class="module-type">
+            <div class="module-color" style="background: #FFC107"></div>
+            <span>Power Plant - Generates power</span>
+        </div>
+        <div class="module-type">
+            <div class="module-color" style="background: #8BC34A"></div>
+            <span>Hydroponics - Produces food</span>
+        </div>
+        <div class="module-type">
+            <div class="module-color" style="background: #9C27B0"></div>
+            <span>Science Lab - Research points</span>
+        </div>
+        <div class="module-type">
+            <div class="module-color" style="background: #795548"></div>
+            <span>Mining Drill - Extracts minerals</span>
+        </div>
+    </div>
     <div class="tutorial">
         <h3>How to Play</h3>
         <ul>
             <li>Click a module type to select it</li>
-            <li>Place modules on the canvas to build your colony</li>
-            <li>Maintain oxygen, power, and food for your colonists</li>
-            <li>Use mining drills to gather minerals for construction</li>
-            <li>Build science labs to research new technologies</li>
-            <li>Watch module efficiency based on resource availability</li>
-            <li>React to alerts when resources are critical</li>
+            <li>Click anywhere on the map to place the module</li>
+            <li>Keep your colonists alive by maintaining:</li>
+            <li>- Oxygen levels (Oxygen Generators)</li>
+            <li>- Power supply (Power Plants)</li>
+            <li>- Food production (Hydroponics)</li>
+            <li>Use Mining Drills to gather minerals for construction</li>
+            <li>Build Science Labs to research new technologies</li>
+            <li>Monitor alerts for resource shortages</li>
+            <li>Manage module efficiency based on power and oxygen levels</li>
         </ul>
     </div>
     <script type="module">
