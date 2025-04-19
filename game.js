@@ -1,3 +1,41 @@
+// Available games for teleportation
+const AVAILABLE_GAMES = [
+    'action-games/monster-arena',
+    'action-games/ninja-runner',
+    'action-games/robot-wars',
+    'action-games/space-shooter',
+    'puzzle-games/color-match',
+    'puzzle-games/logic-gates',
+    'puzzle-games/time-shifter',
+    'puzzle-games/word-scramble',
+    'strategy-games/card-commander',
+    'strategy-games/city-planner',
+    'strategy-games/space-colony',
+    'strategy-games/tiny-empire',
+    'strategy-games/trade-routes'
+];
+
+class Door {
+    constructor(game, x, y) {
+        this.game = game;
+        this.x = x;
+        this.y = y;
+        this.width = 60;
+        this.height = 100;
+        this.destination = AVAILABLE_GAMES[Math.floor(Math.random() * AVAILABLE_GAMES.length)];
+        this.spawnTime = Date.now();
+        this.duration = 15000 + Math.random() * 15000; // 15-30 seconds
+    }
+
+    isExpired() {
+        return Date.now() - this.spawnTime > this.duration;
+    }
+
+    teleport() {
+        window.location.href = `/games/${this.destination}/index.html`;
+    }
+}
+
 class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
@@ -109,6 +147,12 @@ class Game {
         // Images container
         this.images = {};
 
+        // Add doors array and door spawning properties
+        this.doors = [];
+        this.lastDoorSpawn = 0;
+        this.doorSpawnInterval = 10000; // 10 seconds between door spawns
+        this.maxDoors = 3; // Maximum number of doors at once
+
         // Load images and start game
         this.loadImages({
             background: './enemy/game-background.png',
@@ -117,7 +161,8 @@ class Game {
             trader: './enemy/the-trader.png',
             monster: './enemy/tricaluctus(underwater-monster).png',
             arrow: './enemy/arrow.png',
-            wall: './enemy/wall.png'
+            wall: './enemy/wall.png',
+            door: './enemy/door.png'
         });
 
         // Input handling
@@ -938,6 +983,8 @@ class Game {
             this.updateResources();
             this.updateQuests();
             this.checkAchievements();
+            this.spawnDoors();
+            this.updateDoors();
         }
         this.checkGameOver();
     }
@@ -1020,6 +1067,7 @@ class Game {
         this.renderEnvironmentEffects();
         this.renderMinimap();
         this.renderUI();
+        this.renderDoors();
     }
 
     gameLoop(currentTime = 0) {
@@ -1330,6 +1378,93 @@ class Game {
         setTimeout(() => {
             levelUp.style.display = 'none';
         }, 2000);
+    }
+
+    // Door methods
+    spawnDoors() {
+        const currentTime = Date.now();
+        if (currentTime - this.lastDoorSpawn >= this.doorSpawnInterval && this.doors.length < this.maxDoors) {
+            // Try to find a valid spawn location
+            let x, y, isValid;
+            do {
+                x = Math.random() * (this.canvas.width - 60);
+                y = Math.random() * (this.canvas.height - 100);
+                isValid = true;
+
+                // Check collision with walls
+                const doorRect = { x, y, width: 60, height: 100 };
+                for (const wall of this.walls) {
+                    if (this.checkCollision(doorRect, wall)) {
+                        isValid = false;
+                        break;
+                    }
+                }
+
+                // Check distance from player
+                const distanceToPlayer = Math.hypot(x - this.player.x, y - this.player.y);
+                if (distanceToPlayer < 150) { // Minimum 150px from player
+                    isValid = false;
+                }
+
+                // Check distance from other doors
+                for (const door of this.doors) {
+                    const distanceToDoor = Math.hypot(x - door.x, y - door.y);
+                    if (distanceToDoor < 200) { // Minimum 200px between doors
+                        isValid = false;
+                        break;
+                    }
+                }
+            } while (!isValid);
+
+            this.doors.push(new Door(this, x, y));
+            this.lastDoorSpawn = currentTime;
+        }
+
+        // Remove expired doors
+        this.doors = this.doors.filter(door => !door.isExpired());
+    }
+
+    updateDoors() {
+        // Check for player collision with doors
+        const playerRect = {
+            x: this.player.x,
+            y: this.player.y,
+            width: 50,
+            height: 50
+        };
+
+        for (const door of this.doors) {
+            if (this.checkCollision(playerRect, door)) {
+                door.teleport();
+                break;
+            }
+        }
+    }
+
+    renderDoors() {
+        // Draw doors
+        this.doors.forEach(door => {
+            if (this.images.door) {
+                this.ctx.drawImage(this.images.door, door.x, door.y, door.width, door.height);
+                
+                // Draw portal effect
+                const gradient = this.ctx.createRadialGradient(
+                    door.x + door.width/2, door.y + door.height/2, 5,
+                    door.x + door.width/2, door.y + door.height/2, 30
+                );
+                gradient.addColorStop(0, 'rgba(100, 200, 255, 0.3)');
+                gradient.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(door.x - 10, door.y - 10, door.width + 20, door.height + 20);
+
+                // Draw destination text
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '12px Arial';
+                const gameName = door.destination.split('/').pop().replace(/-/g, ' ');
+                const textWidth = this.ctx.measureText(gameName).width;
+                this.ctx.fillText(gameName, door.x + (door.width - textWidth)/2, door.y - 5);
+            }
+        });
     }
 }
 window.onload = () => {
