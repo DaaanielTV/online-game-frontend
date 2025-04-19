@@ -6,80 +6,150 @@ class ColorTile extends Entity {
     constructor(x, y, color, size = 60) {
         super(x, y, size, size);
         this.color = color;
-        this.targetColor = null;
+        this.targetColor = this.getRandomColor();
         this.isSelected = false;
         this.isMatched = false;
         this.animation = 0;
-        this.targetColor = this.getRandomColor();
 
-
-        // implemtnt block builder game
+        // Block Builder spezifisch
         this.isBlock = false;
         this.blockColor = this.getRandomColor();
     }
 
-    // look at my codebase and code this minigame like the other minigames
     getRandomColor() {
         const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
         return colors[Math.floor(Math.random() * colors.length)];
-// fix this error [{	"resource": "/e:/!Coding-Enviroment/online-game/games/puzzle-games/block-builder/game.js",
-//	"owner": "typescript",
-	//"code": "1005",
-	//"severity": 8,
-	//"message": "'}' expected.",
-	//"source": "ts",
-	//"startLineNumber": 29,
-	//"startColumn": 6,
-	//"endLineNumber": 29,
-//	"endColumn": 6
-//}]
-
-// fix this error above please
-
-
-
-//fix this error above, this one: // '}' expected.
-
-// what for ideas do you have for block builder game?
-// make a list of ideas for block builder game
-// 1. Players can build structures using different colored blocks.
-
-// implement 1 in javascript
-
-if selected block is not matched with target color, then change the color of the selected block to the target color
-then this.animation = 1;
-BigUint64Array.from(this.color) = this.targetColor;
-
-if this.animation == 1, then animate the block to the target color
-
-else if this.animation == 0, then animate the block to the original color
-
-// else if this.animation == 2, then animate the block to the target color
-// else if this.animation == 3, then animate the block to the original color
-// 2. Players can use physics to build stable structures.
-
-// 3. Players can unlock new block types and colors as they progress through the game.
-
-
-
-// 2. Players can create their own levels and share them with others.
-// 3. Players can solve puzzles by arranging blocks in a specific order.
-// 4. Players can compete against each other to build the tallest structure.
-// 5. Players can use physics to their advantage to create stable structures.
-// 6. Players can unlock new block types and colors as they progress through the game.
-// 7. Players can use power-ups to help them build faster or more efficiently.
-// 8. Players can customize their blocks with different patterns and designs.
-// 9. Players can create their own custom blocks using a block editor.
-// 10. Players can earn rewards for completing levels and challenges.
-// 11. Players can use a variety of tools to manipulate blocks, such as rotate, scale, and move.
-// 12. Players can create their own custom levels using a level editor.
-// 13. Players can use a variety of materials to build with, such as wood, stone, and metal.
-// 14. Players can create their own custom materials using a material editor.
-// 15. Players can use a variety of textures to customize their blocks.
-// 16. Players can create their own custom textures using a texture editor.
-
     }
+
     update() {
-
-        export default ColorGame;
+        // Beispiel: Animationen basierend auf Zustand
+        if (this.animation === 1) {
+            // Animation zu targetColor (pseudo-code)
+            this.color = this.targetColor;
+        } else if (this.animation === 0) {
+            // Animation zu originaler Farbe
+            // Hier müsstest du eine ursprüngliche Farbe speichern
+        }
     }
+}
+
+class Block extends Entity {
+    constructor(x, y, type, size = 40) {
+        super(x, y, size, size);
+        this.type = type;
+        this.mass = this.getMass(type);
+        this.isStatic = false;
+        this.velocity = { x: 0, y: 0 };
+        this.rotation = 0;
+    }
+
+    getMass(type) {
+        const masses = {
+            wood: 1,
+            stone: 2,
+            metal: 3
+        };
+        return masses[type] || 1;
+    }
+
+    update(deltaTime) {
+        if (!this.isStatic) {
+            this.velocity.y += 0.5; // gravity
+            this.x += this.velocity.x * deltaTime;
+            this.y += this.velocity.y * deltaTime;
+        }
+    }
+
+    render(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width/2, this.y + this.height/2);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.getBlockColor();
+        ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+        ctx.restore();
+    }
+
+    getBlockColor() {
+        const colors = {
+            wood: '#8B4513',
+            stone: '#808080',
+            metal: '#C0C0C0'
+        };
+        return colors[this.type] || '#000000';
+    }
+}
+
+class BlockBuilderGame {
+    constructor(canvasId) {
+        this.engine = new GameEngine(canvasId);
+        this.input = new InputManager();
+        this.blocks = [];
+        this.selectedBlockType = 'wood';
+        this.isPlacing = false;
+        this.setup();
+    }
+
+    setup() {
+        // Add ground
+        const ground = new Block(0, this.engine.canvas.height - 40, 'stone');
+        ground.width = this.engine.canvas.width;
+        ground.isStatic = true;
+        this.blocks.push(ground);
+
+        this.setupEventListeners();
+        this.engine.init();
+    }
+
+    setupEventListeners() {
+        this.engine.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+        this.engine.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        this.engine.canvas.addEventListener('mouseup', () => this.isPlacing = false);
+    }
+
+    handleMouseDown(e) {
+        const rect = this.engine.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        this.isPlacing = true;
+        this.placeBlock(x, y);
+    }
+
+    handleMouseMove(e) {
+        if (!this.isPlacing) return;
+        const rect = this.engine.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        this.placeBlock(x, y);
+    }
+
+    placeBlock(x, y) {
+        const block = new Block(x - 20, y - 20, this.selectedBlockType);
+        this.blocks.push(block);
+        this.engine.addEntity(block);
+    }
+
+    update(deltaTime) {
+        this.checkCollisions();
+        this.blocks.forEach(block => block.update(deltaTime));
+    }
+
+    checkCollisions() {
+        for (let i = 0; i < this.blocks.length; i++) {
+            for (let j = i + 1; j < this.blocks.length; j++) {
+                if (this.blocks[i].collidesWith(this.blocks[j])) {
+                    this.resolveCollision(this.blocks[i], this.blocks[j]);
+                }
+            }
+        }
+    }
+
+    resolveCollision(block1, block2) {
+        if (block2.isStatic) {
+            block1.velocity.y = 0;
+            block1.y = block2.y - block1.height;
+        }
+    }
+}
+
+export default BlockBuilderGame;

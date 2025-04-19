@@ -2,12 +2,7 @@
 
 # i will remove all finished ideas
 
-## Strategy Games
-11. Tiny Empire: Build and manage a miniature kingdom
-12. Space Colony: Manage resources and expand through space
-13. Card Commander: Deck-building strategy game
-14. City Planner: Urban development simulation
-15. Trade Routes: Historical trading and economy management
+
 
 ## RPG Games
 16. Pixel Heroes: Classic RPG with modern mechanics

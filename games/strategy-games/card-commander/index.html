@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Commander - Strategy Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1e272e;
+            color: #d2dae2;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            background: #2C3A47;
+            border: 2px solid #58B19F;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(88, 177, 159, 0.2);
+        }
+        button {
+            padding: 12px 24px;
+            background: #58B19F;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background: #3B8070;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(88, 177, 159, 0.3);
+        }
+        .tutorial {
+            background: rgba(88, 177, 159, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-width: 600px;
+        }
+        .tutorial h3 {
+            color: #58B19F;
+            margin-top: 0;
+        }
+        .tutorial ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        .tutorial li {
+            margin: 12px 0;
+            line-height: 1.5;
+            position: relative;
+        }
+        .tutorial li::before {
+            content: "→";
+            color: #58B19F;
+            position: absolute;
+            left: -20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Card Commander</h1>
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <div class="tutorial">
+        <h3>How to Play</h3>
+        <ul>
+            <li>Drag cards from your hand to the play area to deploy them</li>
+            <li>Each card costs energy to play - manage your energy wisely</li>
+            <li>Unit cards provide combat power</li>
+            <li>Strategy cards provide special effects</li>
+            <li>Your energy increases each turn</li>
+            <li>Draw a new card at the start of each turn</li>
+            <li>Build powerful combinations between different card types</li>
+        </ul>
+    </div>
+    <script type="module">
+        import CardCommander from './game.js';
+        
+        window.addEventListener('load', () => {
+            const game = new CardCommander('gameCanvas');
+        });
+    </script>
+</body>
+</html>

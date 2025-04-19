@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Routes - Strategy Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            background: #34495e;
+            border: 2px solid #f1c40f;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.2);
+        }
+        button {
+            padding: 12px 24px;
+            background: #f1c40f;
+            border: none;
+            border-radius: 4px;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background: #f39c12;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+        }
+        .tutorial {
+            background: rgba(241, 196, 15, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-width: 800px;
+            border: 1px solid rgba(241, 196, 15, 0.3);
+        }
+        .tutorial h3 {
+            color: #f1c40f;
+            margin-top: 0;
+            border-bottom: 1px solid rgba(241, 196, 15, 0.3);
+            padding-bottom: 10px;
+        }
+        .tutorial-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .tutorial-section {
+            padding: 15px;
+            background: rgba(52, 73, 94, 0.5);
+            border-radius: 4px;
+        }
+        .tutorial-section h4 {
+            color: #f1c40f;
+            margin-top: 0;
+        }
+        .tutorial ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        .tutorial li {
+            margin: 8px 0;
+            line-height: 1.5;
+            position: relative;
+        }
+        .tutorial li::before {
+            content: "•";
+            color: #f1c40f;
+            position: absolute;
+            left: -20px;
+            font-size: 20px;
+        }
+        .resources-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .resource-item {
+            background: rgba(52, 73, 94, 0.5);
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid rgba(241, 196, 15, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>Trade Routes</h1>
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <div class="tutorial">
+        <h3>Trade Empire Management</h3>
+        <div class="tutorial-content">
+            <div class="tutorial-section">
+                <h4>How to Play</h4>
+                <ul>
+                    <li>Click on a city to view its resources and prices</li>
+                    <li>Click another city to establish a trade route</li>
+                    <li>Trade routes cost money based on distance</li>
+                    <li>End your turn to collect profits from trade</li>
+                    <li>Watch for price fluctuations and demand changes</li>
+                    <li>Build your reputation through profitable trades</li>
+                </ul>
+            </div>
+            <div class="tutorial-section">
+                <h4>Cities & Resources</h4>
+                <ul>
+                    <li>Each city produces unique resources</li>
+                    <li>Prices vary based on local supply and demand</li>
+                    <li>Trading partners affect city prosperity</li>
+                    <li>Route efficiency may degrade over time</li>
+                </ul>
+                <div class="resources-list">
+                    <div class="resource-item">Spices</div>
+                    <div class="resource-item">Silk</div>
+                    <div class="resource-item">Gold</div>
+                    <div class="resource-item">Tea</div>
+                    <div class="resource-item">Porcelain</div>
+                    <div class="resource-item">Ivory</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import TradeRoutesGame from './game.js';
+        
+        window.addEventListener('load', () => {
+            const game = new TradeRoutesGame('gameCanvas');
+        });
+    </script>
+</body>
+</html>

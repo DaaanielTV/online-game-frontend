@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Colony - Strategy Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            background: #0f0f1a;
+            border: 2px solid #4a4a8a;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(74, 74, 138, 0.3);
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 800px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4a4a8a;
+            border: none;
+            border-radius: 4px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: capitalize;
+        }
+        button:hover {
+            background: #6a6aaa;
+            transform: translateY(-2px);
+        }
+        button.selected {
+            background: #8a4a4a;
+            box-shadow: 0 0 10px rgba(138, 74, 74, 0.5);
+        }
+        .tutorial {
+            background: rgba(74, 74, 138, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-width: 600px;
+        }
+        .tutorial h3 {
+            color: #8a8aaa;
+            margin-top: 0;
+        }
+        .tutorial ul {
+            padding-left: 20px;
+        }
+        .tutorial li {
+            margin: 10px 0;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Space Colony</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="controls">
+        <!-- Module buttons will be added here by JavaScript -->
+    </div>
+    <div class="tutorial">
+        <h3>How to Play</h3>
+        <ul>
+            <li>Click a module type to select it</li>
+            <li>Place modules on the canvas to build your colony</li>
+            <li>Maintain oxygen, power, and food for your colonists</li>
+            <li>Use mining drills to gather minerals for construction</li>
+            <li>Build science labs to research new technologies</li>
+            <li>Watch module efficiency based on resource availability</li>
+            <li>React to alerts when resources are critical</li>
+        </ul>
+    </div>
+    <script type="module">
+        import SpaceColonyGame from './game.js';
+        
+        window.addEventListener('load', () => {
+            const game = new SpaceColonyGame('gameCanvas');
+        });
+    </script>
+</body>
+</html>
