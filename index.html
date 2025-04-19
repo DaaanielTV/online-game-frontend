@@ -1,126 +1,80 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Arcade Hub</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #000;
-        }
-        canvas {
-            display: block;
-        }
-        #ui {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-family: Arial, sans-serif;
-            user-select: none;
-        }
-        #shop {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
-        }
-        #deathScreen {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        .notification {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        #shopButton {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button {
-            margin: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="ui">
-        <div id="health">Health: 5000</div>
-        <div id="stamina">Stamina: 100</div>
-        <div id="resources">Score: 0 | Coins: 0</div>
-    </div>
+import React, { useState } from 'react';
 
-    <button id="shopButton">Shop</button>
-
-    <div id="shop">
-        <h2>Shop</h2>
-        <div>Your Coins: <span id="currentCoins">0</span></div>
-        <div>
-            <h3>Speed</h3>
-            <p>Current Level: <span id="currentSpeed">1</span></p>
-            <p>Cost: <span id="speedPrice">100</span> coins</p>
-            <button id="upgradeSpeed">Upgrade Speed</button>
+export default function GameStructure() {
+  const [showShop, setShowShop] = useState(false);
+  
+  return (
+    <div className="bg-gray-900 text-white p-4 rounded-lg max-w-2xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Arcade Hub - Struktur</h2>
+      
+      <div className="bg-gray-800 p-4 rounded-lg mb-4">
+        <h3 className="text-lg font-semibold mb-2">HTML-Struktur</h3>
+        <div className="pl-4 border-l-2 border-blue-500">
+          <div className="mb-2">
+            <span className="text-blue-400">{'<html>'}</span>
+          </div>
+          <div className="pl-4 mb-2">
+            <span className="text-blue-400">{'<head>'}</span>
+            <div className="pl-4">
+              <div className="text-green-400">{'<title>Arcade Hub</title>'}</div>
+              <div className="text-yellow-400">{'<meta name="viewport" content="width=device-width, initial-scale=1.0">'}</div>
+              <div className="text-green-400">{'<style>...</style>'}</div>
+            </div>
+            <span className="text-blue-400">{'</head>'}</span>
+          </div>
+          <div className="pl-4">
+            <span className="text-blue-400">{'<body>'}</span>
+            <div className="pl-4">
+              <div className="text-green-400">{'<canvas id="gameCanvas"></canvas>'}</div>
+              <div className="text-green-400">{'<div id="ui">...</div>'}</div>
+              <div className="text-green-400">{'<button id="shopButton">Shop</button>'}</div>
+              <div className="text-green-400">{'<div id="shop">...</div>'}</div>
+              <div className="text-green-400">{'<div id="deathScreen">...</div>'}</div>
+              <div className="text-green-400">{'<div id="notifications">...</div>'}</div>
+              <div className="text-yellow-400">{'<script src="game.js"></script>'}</div>
+              <div className="text-green-400">{'<script>document.addEventListener...</script>'}</div>
+            </div>
+            <span className="text-blue-400">{'</body>'}</span>
+          </div>
+          <div>
+            <span className="text-blue-400">{'</html>'}</span>
+          </div>
         </div>
-        <div>
-            <h3>Damage</h3>
-            <p>Current Level: <span id="currentDamage">1</span></p>
-            <p>Cost: <span id="damagePrice">150</span> coins</p>
-            <button id="upgradeDamage">Upgrade Damage</button>
+      </div>
+      
+      <div className="bg-gray-800 p-4 rounded-lg">
+        <h3 className="text-lg font-semibold mb-2">Game Interface Preview</h3>
+        <div className="border border-gray-600 rounded p-2 relative h-64 bg-black">
+          {/* Game canvas simulation */}
+          <div className="absolute top-2 left-2 text-sm">
+            <div>Health: 5000</div>
+            <div>Stamina: 100</div>
+            <div>Score: 0 | Coins: 0</div>
+          </div>
+          
+          <button 
+            className="absolute top-2 right-2 bg-gray-800 px-2 py-1 rounded text-sm"
+            onClick={() => setShowShop(!showShop)}
+          >
+            Shop
+          </button>
+          
+          {showShop && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-800 p-4 rounded w-3/4">
+              <h4 className="font-bold">Shop</h4>
+              <div className="text-sm">Your Coins: 0</div>
+              <div className="flex justify-between mt-2">
+                <button className="bg-blue-600 px-2 py-1 rounded text-xs">Upgrade Speed</button>
+                <button className="bg-red-600 px-2 py-1 rounded text-xs">Upgrade Damage</button>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
+      
+      <div className="mt-4 text-sm">
+        <div className="text-yellow-400">Gelb</div> = Empfohlene Änderungen
+      </div>
     </div>
-
-    <div id="deathScreen">
-        <h1>Game Over</h1>
-        <p>Final Score: <span id="finalScore">0</span></p>
-        <button onclick="game.restartGame()">Play Again</button>
-    </div>
-
-    <div id="waveComplete" class="notification">
-        Wave Complete!<br>
-        Bonus Coins: <span id="waveBonus">0</span>
-    </div>
-
-    <div id="levelUp" class="notification">
-        Level Up!
-    </div>
-
-    <script>
-        // Wait for DOM to be fully loaded before initializing game
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, initializing game...');
-            window.game = new Game();
-        });
-    </script>
-    <script src="game.js"></script>
-</body>
-</html>
+  );
+}
