@@ -114,6 +114,13 @@
         Level Up!
     </div>
 
+    <script>
+        // Wait for DOM to be fully loaded before initializing game
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing game...');
+            window.game = new Game();
+        });
+    </script>
     <script src="game.js"></script>
 </body>
 </html>

@@ -220,8 +220,11 @@ class Game {
                 console.error(`Error loading image ${src}:`, e);
                 onImageLoad(); // Continue with game even if image fails
             };
-            img.src = src;
+            // Fix image paths to be relative to the root
+            const fixedSrc = src.replace('./enemy/', '/enemy/');
+            img.src = fixedSrc;
             this.images[key] = img;
+            console.log(`Attempting to load image: ${fixedSrc}`);
         }
     }
 
@@ -997,13 +1000,19 @@ class Game {
         if (this.images.background) {
             this.ctx.drawImage(this.images.background, 0, 0, this.canvas.width, this.canvas.height);
         } else {
-            console.warn('Background image not loaded');
+            // Fallback background
+            this.ctx.fillStyle = '#111';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
         // Draw walls
         this.walls.forEach(wall => {
             if (this.images.wall) {
                 this.ctx.drawImage(this.images.wall, wall.x, wall.y, wall.width, wall.height);
+            } else {
+                // Fallback wall rendering
+                this.ctx.fillStyle = '#555';
+                this.ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
             }
         });
 
@@ -1011,47 +1020,56 @@ class Game {
         this.entities.forEach(entity => {
             if (this.images[entity.type]) {
                 this.ctx.drawImage(this.images[entity.type], entity.x, entity.y, 50, 50);
-                
-                // Draw health bar
-                this.ctx.fillStyle = 'red';
-                this.ctx.fillRect(entity.x, entity.y - 10, 50, 5);
-                this.ctx.fillStyle = 'green';
-                this.ctx.fillRect(entity.x, entity.y - 10, (entity.health / 100) * 50, 5);
+            } else {
+                // Fallback entity rendering
+                this.ctx.fillStyle = entity.type === 'trader' ? '#44f' : '#f44';
+                this.ctx.fillRect(entity.x, entity.y, 50, 50);
             }
+            
+            // Draw health bar
+            this.ctx.fillStyle = 'red';
+            this.ctx.fillRect(entity.x, entity.y - 10, 50, 5);
+            this.ctx.fillStyle = 'green';
+            this.ctx.fillRect(entity.x, entity.y - 10, (entity.health / 100) * 50, 5);
         });
 
         // Draw arrows with new size
         this.arrows.forEach(arrow => {
+            this.ctx.save();
+            this.ctx.translate(arrow.x, arrow.y);
+            this.ctx.rotate(arrow.angle);
             if (this.images.arrow) {
-                this.ctx.save();
-                this.ctx.translate(arrow.x, arrow.y);
-                this.ctx.rotate(arrow.angle);
                 this.ctx.drawImage(this.images.arrow, 0, -arrow.height/2, arrow.width, arrow.height);
-                this.ctx.restore();
+            } else {
+                // Fallback arrow rendering
+                this.ctx.fillStyle = '#ff0';
+                this.ctx.fillRect(0, -arrow.height/2, arrow.width, arrow.height);
             }
+            this.ctx.restore();
         });
 
         // Draw entity arrows
         this.entityArrows.forEach(arrow => {
+            this.ctx.save();
+            this.ctx.translate(arrow.x, arrow.y);
+            this.ctx.rotate(arrow.angle);
             if (this.images.arrow) {
-                this.ctx.save();
-                this.ctx.translate(arrow.x, arrow.y);
-                this.ctx.rotate(arrow.angle);
                 this.ctx.drawImage(this.images.arrow, 0, -arrow.height/2, arrow.width, arrow.height);
-                this.ctx.restore();
+            } else {
+                // Fallback arrow rendering
+                this.ctx.fillStyle = '#f00';
+                this.ctx.fillRect(0, -arrow.height/2, arrow.width, arrow.height);
             }
+            this.ctx.restore();
         });
-
-        // Draw power-ups
-        this.powerUps.forEach(powerUp => {
-            this.ctx.fillStyle = powerUp.type === 'health' ? 'red' : 
-                               powerUp.type === 'speed' ? 'yellow' : 'blue';
-            this.ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
-        });
-
+        
         // Draw player
         if (this.images.player) {
             this.ctx.drawImage(this.images.player, this.player.x, this.player.y, 50, 50);
+        } else {
+            // Fallback player rendering
+            this.ctx.fillStyle = '#0f0';
+            this.ctx.fillRect(this.player.x, this.player.y, 50, 50);
         }
 
         // Update UI
