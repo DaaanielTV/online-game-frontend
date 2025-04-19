@@ -36,17 +36,23 @@ class Spaceship extends Entity {
 
     shoot() {
         const bullet = new Bullet(this.x + this.width / 2, this.y);
+        bullet.game = this.game;
         this.game.engine.addEntity(bullet);
     }
 
     render(ctx) {
-        ctx.fillStyle = '#4CAF50';
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2, this.y);
-        ctx.lineTo(this.x, this.y + this.height);
-        ctx.lineTo(this.x + this.width, this.y + this.height);
-        ctx.closePath();
-        ctx.fill();
+        if (this.game.assets.getImage('player')) {
+            ctx.drawImage(this.game.assets.getImage('player'), this.x, this.y, this.width, this.height);
+        } else {
+            // Fallback rendering
+            ctx.fillStyle = '#4CAF50';
+            ctx.beginPath();
+            ctx.moveTo(this.x + this.width / 2, this.y);
+            ctx.lineTo(this.x, this.y + this.height);
+            ctx.lineTo(this.x + this.width, this.y + this.height);
+            ctx.closePath();
+            ctx.fill();
+        }
     }
 
     takeDamage(amount) {
@@ -105,12 +111,18 @@ class Enemy extends Entity {
 
     shoot() {
         const bullet = new EnemyBullet(this.x + this.width / 2, this.y + this.height);
+        bullet.game = this.game;
         this.game.engine.addEntity(bullet);
     }
 
     render(ctx) {
-        ctx.fillStyle = '#FF5252';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.game.assets.getImage('enemy')) {
+            ctx.drawImage(this.game.assets.getImage('enemy'), this.x, this.y, this.width, this.height);
+        } else {
+            // Fallback rendering
+            ctx.fillStyle = '#FF5252';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
     }
 }
 
@@ -140,10 +152,22 @@ class SpaceShooterGame {
         this.assets = new AssetManager();
         this.player = null;
         this.isGameOver = false;
-        this.setup();
     }
 
-    setup() {
+    async loadAssets() {
+        try {
+            await this.assets.loadImage('player', '../../enemy/player-avatar.png');
+            await this.assets.loadImage('enemy', '../../enemy/tricaluctus(underwater-monster).png');
+            await this.assets.loadImage('background', '../../enemy/game-background.png');
+        } catch (error) {
+            console.warn('Failed to load some assets, using fallback graphics');
+        }
+    }
+
+    async setup() {
+        // Load assets first
+        await this.loadAssets();
+
         // Create player
         this.player = new Spaceship(
             this.engine.canvas.width / 2 - 20,
@@ -178,6 +202,11 @@ class SpaceShooterGame {
         // Add score display
         this.engine.addEntity({
             render: (ctx) => {
+                // Draw background first
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+
                 if (this.isGameOver) {
                     ctx.fillStyle = '#ffffff';
                     ctx.font = '48px Arial';
@@ -261,7 +290,8 @@ class SpaceShooterGame {
         );
     }
 
-    start() {
+    async start() {
+        await this.setup();
         this.engine.init();
     }
 }
