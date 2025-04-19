@@ -3,147 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Colony - Strategy Game</title>
+    <title>Space Colony</title>
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background: #1a1a2e;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #1a1a2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
         canvas {
-            background: #0f0f1a;
-            border: 2px solid #4a4a8a;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(74, 74, 138, 0.3);
+            border: 2px solid #673AB7;
+            background: #16213e;
+            margin: 20px;
         }
-        .controls {
+        .colony-interface {
             display: flex;
-            gap: 10px;
+            gap: 20px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             justify-content: center;
-            max-width: 800px;
         }
-        button {
-            padding: 10px 20px;
-            background: #4a4a8a;
+        .resources-panel, .buildings-panel {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+        .resource-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px;
+            background: rgba(103, 58, 183, 0.1);
+            border-radius: 4px;
+        }
+        .build-button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #673AB7;
             border: none;
             border-radius: 4px;
-            color: #e0e0e0;
+            color: white;
             cursor: pointer;
             transition: all 0.3s;
-            text-transform: capitalize;
         }
-        button:hover {
-            background: #6a6aaa;
+        .build-button:hover {
+            background: #5E35B1;
             transform: translateY(-2px);
         }
-        button.selected {
-            background: #8a4a4a;
-            box-shadow: 0 0 10px rgba(138, 74, 74, 0.5);
+        .build-button:disabled {
+            background: #4527A0;
+            cursor: not-allowed;
+            transform: none;
         }
-        .tutorial {
-            background: rgba(74, 74, 138, 0.2);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            max-width: 600px;
-        }
-        .tutorial h3 {
-            color: #8a8aaa;
-            margin-top: 0;
-        }
-        .tutorial ul {
-            padding-left: 20px;
-        }
-        .tutorial li {
-            margin: 10px 0;
-            line-height: 1.4;
-        }
-        .module-legend {
-            background: rgba(74, 74, 138, 0.2);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            max-width: 600px;
-        }
-        .module-legend h3 {
-            color: #8a8aaa;
-            margin-top: 0;
-        }
-        .module-type {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-        }
-        .module-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
+        .status-bar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
             border-radius: 4px;
         }
     </style>
 </head>
 <body>
     <h1>Space Colony</h1>
+    <div class="colony-interface">
+        <div class="resources-panel">
+            <h3>Resources</h3>
+            <div class="resource-item">
+                <span>Energy:</span>
+                <span id="energy">100</span>
+            </div>
+            <div class="resource-item">
+                <span>Minerals:</span>
+                <span id="minerals">50</span>
+            </div>
+            <div class="resource-item">
+                <span>Population:</span>
+                <span id="population">10</span>
+            </div>
+            <div class="resource-item">
+                <span>Oxygen:</span>
+                <span id="oxygen">1000</span>
+            </div>
+        </div>
+        <div class="buildings-panel">
+            <h3>Build</h3>
+            <button class="build-button" data-building="solar">Solar Panel (50 minerals)</button>
+            <button class="build-button" data-building="mine">Mining Facility (100 minerals)</button>
+            <button class="build-button" data-building="dome">Habitat Dome (200 minerals)</button>
+            <button class="build-button" data-building="lab">Research Lab (150 minerals)</button>
+        </div>
+    </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div class="controls">
-        <!-- Module buttons will be added here by JavaScript -->
-    </div>
-    <div class="module-legend">
-        <h3>Module Types</h3>
-        <div class="module-type">
-            <div class="module-color" style="background: #4CAF50"></div>
-            <span>Habitat - Houses colonists</span>
-        </div>
-        <div class="module-type">
-            <div class="module-color" style="background: #00BCD4"></div>
-            <span>Oxygen Generator - Produces oxygen</span>
-        </div>
-        <div class="module-type">
-            <div class="module-color" style="background: #FFC107"></div>
-            <span>Power Plant - Generates power</span>
-        </div>
-        <div class="module-type">
-            <div class="module-color" style="background: #8BC34A"></div>
-            <span>Hydroponics - Produces food</span>
-        </div>
-        <div class="module-type">
-            <div class="module-color" style="background: #9C27B0"></div>
-            <span>Science Lab - Research points</span>
-        </div>
-        <div class="module-type">
-            <div class="module-color" style="background: #795548"></div>
-            <span>Mining Drill - Extracts minerals</span>
-        </div>
-    </div>
-    <div class="tutorial">
-        <h3>How to Play</h3>
-        <ul>
-            <li>Click a module type to select it</li>
-            <li>Click anywhere on the map to place the module</li>
-            <li>Keep your colonists alive by maintaining:</li>
-            <li>- Oxygen levels (Oxygen Generators)</li>
-            <li>- Power supply (Power Plants)</li>
-            <li>- Food production (Hydroponics)</li>
-            <li>Use Mining Drills to gather minerals for construction</li>
-            <li>Build Science Labs to research new technologies</li>
-            <li>Monitor alerts for resource shortages</li>
-            <li>Manage module efficiency based on power and oxygen levels</li>
-        </ul>
-    </div>
+    <div class="status-bar">Colony Status: <span id="status">Starting Up...</span></div>
     <script type="module">
-        import SpaceColonyGame from './game.js';
-        
-        window.addEventListener('load', () => {
-            const game = new SpaceColonyGame('gameCanvas');
-        });
+        import SpaceColony from './game.js';
+        const game = new SpaceColony('gameCanvas');
+        game.start();
     </script>
 </body>
 </html>

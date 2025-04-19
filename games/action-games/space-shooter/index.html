@@ -7,88 +7,50 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background: #000000;
-            color: #ffffff;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
         canvas {
-            background: #111111;
             border: 2px solid #4CAF50;
+            background: #000;
             margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.2);
         }
         .controls {
-            background: rgba(76, 175, 80, 0.1);
+            background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 8px;
-            margin-top: 20px;
-            max-width: 600px;
             text-align: center;
         }
-        .controls h3 {
-            color: #4CAF50;
-            margin-top: 0;
-        }
-        .controls ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .controls li {
-            margin: 10px 0;
-        }
-        .key {
+        .controls span {
             background: #4CAF50;
-            padding: 2px 8px;
+            padding: 5px 10px;
             border-radius: 4px;
-            color: white;
-            font-weight: bold;
             margin: 0 5px;
         }
     </style>
 </head>
 <body>
     <h1>Space Shooter</h1>
-    <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div class="controls">
-        <h3>Controls</h3>
-        <ul>
-            <li><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> or Arrow Keys to move</li>
-            <li><span class="key">Space</span> to shoot</li>
-        </ul>
+        <p>Controls:</p>
+        <p>
+            <span>W</span> <span>A</span> <span>S</span> <span>D</span> or Arrow Keys to move
+            <span>Space</span> to shoot
+        </p>
         <p>Destroy enemies and avoid their bullets to survive!</p>
     </div>
     <script type="module">
         import SpaceShooterGame from './game.js';
-        
-        // Create and start the game
         const game = new SpaceShooterGame('gameCanvas');
         game.start();
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const canvas = document.getElementById('gameCanvas');
-            canvas.width = Math.min(800, window.innerWidth - 40);
-            canvas.height = Math.min(600, window.innerHeight - 40);
-            game.engine.resize();
-        });
-
-        // Initial resize
-        window.dispatchEvent(new Event('resize'));
-
-        // Prevent scrolling with arrow keys
-        window.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
-            }
-        });
     </script>
 </body>
 </html>

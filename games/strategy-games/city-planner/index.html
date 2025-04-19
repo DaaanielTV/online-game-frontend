@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>City Planner - Strategy Game</title>
+    <title>City Planner</title>
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background: #ecf0f1;
-            color: #2c3e50;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #1a1a2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
         canvas {
-            background: #ffffff;
-            border: 2px solid #bdc3c7;
+            border: 2px solid #4CAF50;
+            background: #16213e;
             margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .controls {
             display: flex;
@@ -29,136 +29,43 @@
             flex-wrap: wrap;
             justify-content: center;
             max-width: 800px;
-            background: #ffffff;
-            padding: 15px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        button {
-            padding: 10px 20px;
-            background: #3498db;
+        .controls button {
+            padding: 8px 16px;
             border: none;
             border-radius: 4px;
+            background: #4CAF50;
             color: white;
             cursor: pointer;
-            transition: all 0.3s;
-            text-transform: capitalize;
-            font-size: 14px;
+            transition: background 0.3s;
         }
-        button:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
+        .controls button:hover {
+            background: #45a049;
         }
-        button.selected {
-            background: #e74c3c;
-            box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+        .controls button.selected {
+            background: #2d682f;
+            box-shadow: 0 0 0 2px white;
         }
-        select {
-            padding: 10px;
-            border: 1px solid #bdc3c7;
+        .controls select {
+            padding: 8px;
             border-radius: 4px;
-            background: white;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        select:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        .tutorial {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            max-width: 600px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .tutorial h3 {
-            color: #2c3e50;
-            margin-top: 0;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-        }
-        .tutorial ul {
-            padding-left: 20px;
-        }
-        .tutorial li {
-            margin: 10px 0;
-            line-height: 1.6;
-            color: #34495e;
-        }
-        .building-info {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .building-info div {
-            background: #f7f9fa;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .building-info h4 {
-            margin: 0 0 5px 0;
-            color: #2c3e50;
-        }
-        .building-info p {
-            margin: 0;
-            color: #7f8c8d;
-            font-size: 14px;
+            background: #2196F3;
+            color: white;
+            border: none;
         }
     </style>
 </head>
 <body>
     <h1>City Planner</h1>
-    <div class="controls">
-        <!-- Building buttons will be added here by JavaScript -->
-    </div>
+    <div class="controls"></div>
     <canvas id="gameCanvas" width="800" height="800"></canvas>
-    <div class="tutorial">
-        <h3>How to Build Your City</h3>
-        <ul>
-            <li>Select a building type from the controls above</li>
-            <li>Choose the building size (1x1 to 3x3)</li>
-            <li>Click on the grid to place your building</li>
-            <li>Balance resources and keep your citizens happy</li>
-            <li>Monitor power and water consumption</li>
-            <li>Control pollution levels with parks and smart planning</li>
-            <li>Ensure enough jobs for your growing population</li>
-        </ul>
-        <div class="building-info">
-            <div>
-                <h4>Residential</h4>
-                <p>Houses your population</p>
-            </div>
-            <div>
-                <h4>Commercial</h4>
-                <p>Provides jobs and income</p>
-            </div>
-            <div>
-                <h4>Industrial</h4>
-                <p>Higher income but creates pollution</p>
-            </div>
-            <div>
-                <h4>Park</h4>
-                <p>Increases happiness, reduces pollution</p>
-            </div>
-            <div>
-                <h4>Power Plant</h4>
-                <p>Provides electricity for your city</p>
-            </div>
-            <div>
-                <h4>Water Treatment</h4>
-                <p>Supplies water to your citizens</p>
-            </div>
-        </div>
-    </div>
     <script type="module">
         import CityPlanner from './game.js';
-        
-        window.addEventListener('load', () => {
-            const game = new CityPlanner('gameCanvas');
-        });
+        const game = new CityPlanner('gameCanvas');
+        game.start();
     </script>
 </body>
 </html>

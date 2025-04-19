@@ -9,104 +9,75 @@
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            background-color: #1a1a2e;
+            background: #1a1a2e;
+            color: #fff;
             font-family: Arial, sans-serif;
-            overflow: hidden;
         }
         canvas {
-            background-color: #0f0f1e;
-            border: 2px solid #2a2a3e;
+            border: 2px solid #9C27B0;
+            background: #16213e;
+            margin-bottom: 20px;
         }
         .controls {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            pointer-events: none;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
         }
-        .legend {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
+        .controls span {
+            background: #9C27B0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 0 5px;
         }
-        .legend-item {
+        .time-controls {
             display: flex;
-            align-items: center;
-            margin: 5px 0;
+            gap: 10px;
+            margin: 10px 0;
+            justify-content: center;
         }
-        .color-box {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border-radius: 3px;
+        .time-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #9C27B0;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .time-button:hover {
+            background: #7B1FA2;
+        }
+        .time-button:disabled {
+            background: #4A148C;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <h3>Time Shifter</h3>
-        <p>Controls:</p>
-        <ul>
-            <li>Arrow Keys to Move</li>
-            <li>Up Arrow to Jump</li>
-            <li>Space to Time Shift</li>
-            <li>R to Reset Level</li>
-        </ul>
-    </div>
-    <div class="legend">
-        <h3>Objects</h3>
-        <div class="legend-item">
-            <div class="color-box" style="background: #4CAF50"></div>
-            <span>Player</span>
-        </div>
-        <div class="legend-item">
-            <div class="color-box" style="background: #666666"></div>
-            <span>Platform</span>
-        </div>
-        <div class="legend-item">
-            <div class="color-box" style="background: #FFD700"></div>
-            <span>Goal</span>
-        </div>
-        <div class="legend-item">
-            <div class="color-box" style="background: #FF4444"></div>
-            <span>Hazard</span>
-        </div>
-    </div>
+    <h1>Time Shifter</h1>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="controls">
+        <p>Controls:</p>
+        <p>
+            <span>W</span> <span>A</span> <span>S</span> <span>D</span> to move
+            <span>Space</span> to interact
+        </p>
+        <div class="time-controls">
+            <button class="time-button" id="rewind">⏪ Rewind</button>
+            <button class="time-button" id="pause">⏸ Pause</button>
+            <button class="time-button" id="forward">⏩ Forward</button>
+        </div>
+        <p>Use time controls to solve puzzles and overcome obstacles!</p>
+    </div>
     <script type="module">
-        import TimeShifterGame from './game.js';
-        
-        // Create and start the game
-        const game = new TimeShifterGame('gameCanvas');
+        import TimeShifter from './game.js';
+        const game = new TimeShifter('gameCanvas');
         game.start();
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const canvas = document.getElementById('gameCanvas');
-            canvas.width = Math.min(800, window.innerWidth - 40);
-            canvas.height = Math.min(600, window.innerHeight - 40);
-            game.engine.resize();
-        });
-
-        // Initial resize
-        window.dispatchEvent(new Event('resize'));
-
-        // Prevent scrolling with arrow keys and space
-        window.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
-            }
-        });
     </script>
 </body>
 </html>

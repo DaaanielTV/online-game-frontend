@@ -9,79 +9,72 @@
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            background-color: #2a1b3d;
+            background: #1a1a2e;
+            color: #fff;
             font-family: Arial, sans-serif;
-            overflow: hidden;
         }
         canvas {
-            background-color: #1a112d;
-            border: 2px solid #44318d;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(68, 49, 141, 0.3);
+            border: 2px solid #FF9800;
+            background: #16213e;
+            margin-bottom: 20px;
         }
-        .controls {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            pointer-events: none;
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
-        .rules {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        .word-input {
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #FF9800;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.8);
             color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            max-width: 300px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        .submit-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #FF9800;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .submit-btn:hover {
+            background: #F57C00;
+        }
+        .timer {
+            font-size: 24px;
+            color: #FF9800;
+            margin: 10px 0;
+        }
+        .score {
+            font-size: 18px;
+            color: #4CAF50;
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <h3>Word Scramble</h3>
-        <p>Controls:</p>
-        <ul>
-            <li>Type letters to guess</li>
-            <li>Backspace to delete</li>
-            <li>Enter to submit answer</li>
-        </ul>
+    <h1>Word Scramble</h1>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+        <div class="timer">Time: <span id="time">60</span>s</div>
+        <input type="text" class="word-input" placeholder="Type your answer..." maxlength="20">
+        <button class="submit-btn">Submit Answer</button>
+        <div class="score">Score: <span id="score">0</span></div>
     </div>
-    <div class="rules">
-        <h3>How to Play</h3>
-        <ul>
-            <li>Unscramble the word before time runs out</li>
-            <li>You have 60 seconds total</li>
-            <li>Wrong answers cost 3 seconds</li>
-            <li>Score more points by solving quickly</li>
-            <li>Try to get as many words as possible!</li>
-        </ul>
-    </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script type="module">
-        import WordGame from './game.js';
-        
-        // Create and start the game
-        const game = new WordGame('gameCanvas');
+        import WordScramble from './game.js';
+        const game = new WordScramble('gameCanvas');
         game.start();
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const canvas = document.getElementById('gameCanvas');
-            canvas.width = Math.min(800, window.innerWidth - 40);
-            canvas.height = Math.min(600, window.innerHeight - 40);
-            game.engine.resize();
-        });
-
-        // Initial resize
-        window.dispatchEvent(new Event('resize'));
     </script>
 </body>
 </html>

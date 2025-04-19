@@ -69,11 +69,14 @@ h1 {
 }
 
 .game-card img {
-    width: 100%;
+    width: 200px;
     height: 150px;
-    object-fit: cover;
-    border-radius: 4px;
+    object-fit: contain;
+    border-radius: 8px;
     margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-card h3 {

@@ -7,70 +7,51 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background: #2c3e50;
-            color: #ecf0f1;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #1a1a2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
         canvas {
-            background: #34495e;
-            border: 2px solid #e74c3c;
+            border: 2px solid #FFC107;
+            background: #000;
             margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(231, 76, 60, 0.2);
         }
         .controls {
-            background: rgba(231, 76, 60, 0.1);
+            background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 8px;
-            margin-top: 20px;
-            max-width: 600px;
             text-align: center;
         }
-        .controls h3 {
-            color: #e74c3c;
-            margin-top: 0;
-        }
-        .controls ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .controls li {
-            margin: 10px 0;
-        }
-        .key {
-            background: #e74c3c;
-            padding: 2px 8px;
+        .controls span {
+            background: #FFC107;
+            padding: 5px 10px;
             border-radius: 4px;
-            color: white;
-            font-weight: bold;
             margin: 0 5px;
+            color: #000;
         }
     </style>
 </head>
 <body>
     <h1>Monster Arena</h1>
-    <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div class="controls">
-        <h3>Controls</h3>
-        <ul>
-            <li><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> or Arrow Keys to move</li>
-            <li><span class="key">Space</span> to attack</li>
-        </ul>
-        <p>Survive waves of monsters and increase your score!</p>
+        <p>Controls:</p>
+        <p>
+            <span>W</span> <span>A</span> <span>S</span> <span>D</span> to move
+            <span>Space</span> to attack
+            <span>E</span> to use special ability
+        </p>
     </div>
     <script type="module">
-        import MonsterArenaGame from './game.js';
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const game = new MonsterArenaGame('gameCanvas');
-            game.start();
-        });
+        import MonsterArena from './game.js';
+        const game = new MonsterArena('gameCanvas');
+        game.start();
     </script>
 </body>
 </html>

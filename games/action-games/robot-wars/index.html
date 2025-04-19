@@ -7,130 +7,106 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background: #1a1a2e;
-            color: #ffffff;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
+            background: #1a1a2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
         canvas {
-            background: #111122;
-            border: 2px solid #4444ff;
+            border: 2px solid #607D8B;
+            background: #16213e;
+            margin: 20px;
+        }
+        .robot-controls {
+            display: flex;
+            gap: 20px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .control-panel {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(68, 68, 255, 0.2);
+            min-width: 200px;
         }
-        .controls {
-            background: rgba(68, 68, 255, 0.1);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            max-width: 600px;
-            text-align: center;
+        .part-selection {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
         }
-        .controls h3 {
-            color: #4444ff;
-            margin-top: 0;
-        }
-        .controls ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .controls li {
-            margin: 10px 0;
-        }
-        .key {
-            background: #4444ff;
-            padding: 2px 8px;
+        .part-button {
+            padding: 8px;
+            background: #607D8B;
+            border: none;
             border-radius: 4px;
             color: white;
-            font-weight: bold;
-            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        .parts-legend {
-            background: rgba(68, 68, 255, 0.1);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            max-width: 600px;
+        .part-button:hover {
+            background: #546E7A;
+            transform: translateY(-2px);
         }
-        .parts-legend h3 {
-            color: #4444ff;
-            margin-top: 0;
+        .part-button.selected {
+            background: #455A64;
+            box-shadow: 0 0 0 2px #90A4AE;
         }
-        .part-type {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
+        .stats-display {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            margin-top: 10px;
         }
-        .part-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
+        .stat-item {
+            padding: 5px;
+            background: rgba(96, 125, 139, 0.1);
             border-radius: 4px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <h1>Robot Wars</h1>
-    <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-    </div>
-    <div class="controls">
-        <h3>Controls</h3>
-        <ul>
-            <li><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> or Arrow Keys to move</li>
-            <li><span class="key">Left</span>/<span class="key">Right</span> to rotate</li>
-            <li><span class="key">Space</span> to shoot</li>
-        </ul>
-        <p>Build your robot with parts and battle enemy robots!</p>
-    </div>
-    <div class="parts-legend">
-        <h3>Robot Parts</h3>
-        <div class="part-type">
-            <div class="part-color" style="background: #8B4513"></div>
-            <span>Chassis - Strong foundation, high health</span>
+    <div class="robot-controls">
+        <div class="control-panel">
+            <h3>Robot Parts</h3>
+            <div class="part-selection">
+                <button class="part-button" data-part="chassis">Chassis</button>
+                <button class="part-button" data-part="weapon">Weapon</button>
+                <button class="part-button" data-part="armor">Armor</button>
+                <button class="part-button" data-part="mobility">Mobility</button>
+            </div>
+            <div class="stats-display">
+                <div class="stat-item">Power: <span id="power">100</span></div>
+                <div class="stat-item">Defense: <span id="defense">50</span></div>
+                <div class="stat-item">Speed: <span id="speed">75</span></div>
+                <div class="stat-item">Weight: <span id="weight">200</span></div>
+            </div>
         </div>
-        <div class="part-type">
-            <div class="part-color" style="background: #FF4444"></div>
-            <span>Weapon - Increases attack power</span>
-        </div>
-        <div class="part-type">
-            <div class="part-color" style="background: #4444FF"></div>
-            <span>Armor - Extra protection</span>
-        </div>
-        <div class="part-type">
-            <div class="part-color" style="background: #44FF44"></div>
-            <span>Wheels - Better speed and maneuverability</span>
+        <div class="control-panel">
+            <h3>Controls</h3>
+            <p>
+                <span>W</span> <span>A</span> <span>S</span> <span>D</span> - Movement
+                <br>
+                <span>Mouse</span> - Aim
+                <br>
+                <span>Left Click</span> - Attack
+                <br>
+                <span>Right Click</span> - Special Move
+            </p>
         </div>
     </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script type="module">
-        import RobotWarsGame from './game.js';
-        
-        // Create and start the game
-        const game = new RobotWarsGame('gameCanvas');
+        import RobotWars from './game.js';
+        const game = new RobotWars('gameCanvas');
         game.start();
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const canvas = document.getElementById('gameCanvas');
-            canvas.width = Math.min(800, window.innerWidth - 40);
-            canvas.height = Math.min(600, window.innerHeight - 40);
-            game.engine.resize();
-        });
-
-        // Initial resize
-        window.dispatchEvent(new Event('resize'));
-
-        // Prevent scrolling with arrow keys and space
-        window.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
-            }
-        });
     </script>
 </body>
 </html>
