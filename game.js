@@ -54,961 +54,298 @@ class Door {
 
 class Game {
     constructor() {
+        // Get canvas and context
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.setupCanvas();
-
-        // Initialize arrays first before using them
-        this.entities = [];
-        this.arrows = [];
-        this.entityArrows = [];
-        this.walls = [];
-        this.powerUps = [];
-        this.resources = [];
-
-        // Environment system - Add this before other systems
-        this.environment = {
-            time: 0,
-            dayLength: 300000, // 5 minutes per day
-            weather: 'clear',
-            weatherEffects: ['clear', 'rain', 'storm', 'fog'],
-            lastWeatherChange: 0,
-            weatherDuration: 60000 // 1 minute
-        };
         
-        // Power-up system
-        this.powerUpTypes = [
-            { type: 'health', bonus: 1000, duration: 10000 },
-            { type: 'speed', bonus: 2, duration: 5000 },
-            { type: 'invincibility', duration: 3000 }
-        ];
-        this.lastPowerUpSpawn = 0;
-        this.powerUpSpawnInterval = 15000; // 15 seconds
+        // Set canvas size to window size
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
 
-        // Resource types
-        this.resourceTypes = ['wood', 'stone', 'metal', 'herb'];
-
-        // Game state
+        // Initialize player with more health
         this.player = {
             x: this.canvas.width / 2,
             y: this.canvas.height / 2,
-            speed: 3, // Reduced from 5
-            health: 5000,
-            maxHealth: 5000,
+            speed: 5,
+            health: 200,
+            maxHealth: 200,
             stamina: 100,
             score: 0,
-            upgrades: {
-                speed: 1,
-                damage: 1
-            },
-            coins: 0,
-            dashCooldown: 2000, // 2 seconds
-            lastDashTime: 0,
-            isDashing: false,
-            dashSpeed: 15,
-            dashDuration: 150, // milliseconds
-            class: 'archer',
-            level: 1,
-            experience: 0,
-            experienceToLevel: 100,
-            elements: {
-                fire: 0,
-                ice: 0,
-                poison: 0
-            },
-            inventory: [],
-            maxInventorySize: 20,
-            skills: {},
-            achievements: new Set(),
-            statistics: {
-                enemiesKilled: 0,
-                damageDealt: 0,
-                powerUpsCollected: 0,
-                wavesCompleted: 0
-            },
-            pets: [],
-            activePet: null,
-            guild: null
+            arrows: [],
+            lastArrowTime: 0
         };
 
-        this.isGameOver = false;
-        this.showShop = false;
-
-        // Shop prices
-        this.shopPrices = {
-            speed: 100,
-            damage: 150
-        };
-
-        // Entity system
-        this.entityTypes = ['elephant', 'monster'];
-        this.lastSpawnTime = 0;
-        this.spawnInterval = 5000; // 5 seconds
-
-        // Add arrows array and trader spawn time
-        this.lastTraderSpawn = 0;
-        this.traderSpawnInterval = 30000; // 30 seconds
-
-        // Add entity arrows array and shooting cooldown
-        this.entityShootCooldown = 2000; // 2 seconds between shots
-
-        // Wave system
-        this.wave = 1;
-        this.enemiesPerWave = 3;
-        this.enemiesRemaining = this.enemiesPerWave;
-        this.waveDelay = 5000; // 5 seconds between waves
-        this.lastWaveTime = 0;
-        this.isWaveInProgress = false;
-
-        // Images container
-        this.images = {};
-
-        // Add doors array and door spawning properties
+        // Initialize game state
+        this.enemies = [];
+        this.walls = [];
         this.doors = [];
+        this.lastEnemySpawn = 0;
+        this.lastWallSpawn = 0;
         this.lastDoorSpawn = 0;
-        this.doorSpawnInterval = 10000; // 10 seconds between door spawns
-        this.maxDoors = 3; // Maximum number of doors at once
-
-        // Load images and start game
-        this.loadImages({
-            background: './enemy/game-background.png',
-            player: './enemy/player-avatar.png',
-            elephant: './enemy/elephant.png',
-            trader: './enemy/the-trader.png',
-            monster: './enemy/tricaluctus(underwater-monster).png',
-            arrow: './enemy/arrow.png',
-            wall: './enemy/wall.png',
-            door: './enemy/door.png'
-        });
-
-        // Input handling
-        this.keys = {};
-        this.setupInputs();
-        this.setupClickHandler();
-        this.setupShootingControls();
-
-        // Database connection
-        this.setupDatabase();
-
-        // Setup UI handlers
-        this.setupShopButton();
-
-        // Initialize systems
-        this.initializeSkillTrees();
-        this.initializeQuestSystem();
-        this.initializeSoundSystem();
-        this.spawnInitialResources();
-        this.initializeEventSystem();
-        this.setupLeaderboard();
-        this.initializeTutorial();
+        this.enemySpawnInterval = 2000;
+        this.wallSpawnInterval = 5000;
+        this.doorSpawnInterval = 15000;
+        this.gameOver = false;
 
         // Initialize arrow pool
         this.arrowPool = new ArrowPool();
 
-        // DO NOT start game loop here, it will be started after images load
-    }
+        // Load images
+        this.images = {};
+        this.loadImages();
 
-    setupCanvas() {
-        // Set canvas size to match window size
-        const updateCanvasSize = () => {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-        };
-        updateCanvasSize();
-        window.addEventListener('resize', updateCanvasSize);
-    }
+        // Setup input handlers
+        this.keys = {};
+        this.setupInputs();
+        this.setupClickHandler();
 
-    loadImages(sources) {
-        console.log('Loading images...');
-        let loadedImages = 0;
-        const totalImages = Object.keys(sources).length;
-
-        const onImageLoad = () => {
-            loadedImages++;
-            console.log(`Loaded ${loadedImages}/${totalImages} images`);
-            if (loadedImages === totalImages) {
-                console.log('All images loaded, starting game');
-                this.startGame();
-            }
-        };
-
-        for (const [key, src] of Object.entries(sources)) {
-            const img = new Image();
-            img.onload = onImageLoad;
-            img.onerror = (e) => {
-                console.error(`Error loading image ${src}:`, e);
-                onImageLoad(); // Continue with game even if image fails
-            };
-            // Fix image paths to be relative to the root
-            const fixedSrc = src.replace('./enemy/', '/enemy/');
-            img.src = fixedSrc;
-            this.images[key] = img;
-            console.log(`Attempting to load image: ${fixedSrc}`);
-        }
-    }
-
-    startGame() {
-        // Initialize game state
-        this.lastTime = 0;
-        this.lastSpawnTime = Date.now();
-        this.lastWaveTime = Date.now();
-        this.lastTraderSpawn = Date.now();
-        
-        // Clear any existing game state
-        this.entities = [];
-        this.arrows = [];
-        this.entityArrows = [];
-        this.walls = [];
-        
-        // Initialize game elements
-        this.spawnWalls();
-        this.startNewWave();
-        
         // Start game loop
-        console.log('Starting game loop');
         this.gameLoop();
+    }
+
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+
+    loadImages() {
+        const images = {
+            player: 'enemy/player-avatar.png',
+            enemy: 'enemy/tricaluctus(underwater-monster).png',
+            background: 'enemy/game-background.png',
+            wall: 'enemy/wall.png',
+            door: 'enemy/door.png',
+            arrow: 'enemy/arrow.png'
+        };
+
+        Object.entries(images).forEach(([key, src]) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                console.log(`Loaded image: ${key}`);
+            };
+            img.onerror = () => {
+                console.error(`Failed to load image: ${key}`);
+            };
+            this.images[key] = img;
+        });
     }
 
     setupInputs() {
         window.addEventListener('keydown', (e) => {
             this.keys[e.key] = true;
         });
+        
         window.addEventListener('keyup', (e) => {
             this.keys[e.key] = false;
-        });
-        
-        // Add dash on Space
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                this.tryDash();
-            }
         });
     }
 
     setupClickHandler() {
         this.canvas.addEventListener('click', (e) => {
-            const rect = this.canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            if (this.gameOver) return;
             
-            this.entities.forEach((entity, index) => {
-                if (this.isClickedOnEntity(x, y, entity)) {
-                    entity.health -= 20;
-                    if (entity.health <= 0) {
-                        this.entities.splice(index, 1);
-                        this.player.score += 10;
-                        this.saveGameState();
-                    }
-                }
+            const now = Date.now();
+            if (now - this.player.lastArrowTime >= 500) { // Arrow cooldown
+                const rect = this.canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                // Calculate angle
+                const dx = mouseX - (this.player.x + 25);
+                const dy = mouseY - (this.player.y + 25);
+                const angle = Math.atan2(dy, dx);
+                
+                // Get arrow from pool
+                const arrow = this.arrowPool.get();
+                arrow.x = this.player.x + 25;
+                arrow.y = this.player.y + 25;
+                arrow.angle = angle;
+                arrow.active = true;
+                arrow.speed = 10;
+                arrow.distance = 0;
+                arrow.maxDistance = 500;
+                
+                this.player.arrows.push(arrow);
+                this.player.lastArrowTime = now;
+            }
+        });
+    }
+
+    spawnEnemy() {
+        const now = Date.now();
+        if (now - this.lastEnemySpawn >= this.enemySpawnInterval) {
+            // Spawn enemy at random position outside the screen
+            const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+            let x, y;
+            
+            switch(side) {
+                case 0: // top
+                    x = Math.random() * this.canvas.width;
+                    y = -50;
+                    break;
+                case 1: // right
+                    x = this.canvas.width + 50;
+                    y = Math.random() * this.canvas.height;
+                    break;
+                case 2: // bottom
+                    x = Math.random() * this.canvas.width;
+                    y = this.canvas.height + 50;
+                    break;
+                case 3: // left
+                    x = -50;
+                    y = Math.random() * this.canvas.height;
+                    break;
+            }
+
+            this.enemies.push({
+                x,
+                y,
+                speed: 2,
+                size: 50
             });
-        });
-    }
-
-    setupShopButton() {
-        const shopBtn = document.getElementById('shopButton');
-        shopBtn.addEventListener('click', () => {
-            this.showShop = !this.showShop;
-            document.getElementById('shop').style.display = this.showShop ? 'block' : 'none';
-        });
-
-        // Setup upgrade buttons
-        document.getElementById('upgradeSpeed').addEventListener('click', () => this.upgrade('speed'));
-        document.getElementById('upgradeDamage').addEventListener('click', () => this.upgrade('damage'));
-    }
-
-    upgrade(type) {
-        const price = this.shopPrices[type];
-        if (this.player.coins >= price) {
-            this.player.coins -= price;
-            this.player.upgrades[type]++;
-            this.shopPrices[type] = Math.floor(price * 1.5);
-            
-            switch(type) {
-                case 'speed':
-                    this.player.speed = 5 + this.player.upgrades.speed;
-                    break;
-                case 'health':
-                    this.player.maxHealth = 5000 + (this.player.upgrades.health * 1000);
-                    this.player.health = this.player.maxHealth;
-                    break;
-                case 'attackSpeed':
-                    // Attack speed is handled in shooting controls
-                    break;
-            }
-            
-            this.updateShopUI();
-            this.saveGameState();
-        }
-    }
-
-    updateShopUI() {
-        document.getElementById('speedPrice').textContent = this.shopPrices.speed;
-        document.getElementById('damagePrice').textContent = this.shopPrices.damage;
-        document.getElementById('currentCoins').textContent = this.player.coins;
-        document.getElementById('currentSpeed').textContent = this.player.upgrades.speed;
-        document.getElementById('currentDamage').textContent = this.player.upgrades.damage;
-    }
-
-    setupShootingControls() {
-        // Add attack speed property if not exists
-        if (!this.player.upgrades.attackSpeed) {
-            this.player.upgrades.attackSpeed = 1;
-        }
-        if (!this.player.lastShot) {
-            this.player.lastShot = 0;
-        }
-
-        window.addEventListener('click', (e) => {
-            if (this.isGameOver || this.showShop) return;
-
-            const currentTime = Date.now();
-            const shootingCooldown = 500 / this.player.upgrades.attackSpeed; // Base 500ms cooldown, reduced by attack speed
-            
-            if (currentTime - this.player.lastShot < shootingCooldown) {
-                return; // Still on cooldown
-            }
-
-            const rect = this.canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            
-            // Check if clicked on trader
-            const traderIndex = this.entities.findIndex(entity => 
-                entity.type === 'trader' && this.isClickedOnEntity(clickX, clickY, entity)
-            );
-
-            if (traderIndex !== -1) {
-                // Remove half of all non-trader entities
-                const nonTraderEntities = this.entities.filter(e => e.type !== 'trader');
-                const removeCount = Math.ceil(nonTraderEntities.length * 0.5);
-                this.entities = this.entities.filter(e => e.type === 'trader');
-                this.entities.push(...nonTraderEntities.slice(removeCount));
-                // Remove the trader after use
-                this.entities = this.entities.filter(e => e !== this.entities[traderIndex]);
-                return;
-            }
-
-            // Create new arrow
-            const angle = Math.atan2(clickY - this.player.y, clickX - this.player.x);
-            this.arrows.push({
-                x: this.player.x + 25,
-                y: this.player.y + 25,
-                angle: angle,
-                speed: 10,
-                damage: 25 * this.player.upgrades.damage,
-                width: 40,  // Bigger arrows
-                height: 10
-            });
-            
-            this.player.lastShot = currentTime;
-        });
-    }
-
-    isClickedOnEntity(x, y, entity) {
-        return x >= entity.x && 
-               x <= entity.x + 50 && 
-               y >= entity.y && 
-               y <= entity.y + 50;
-    }
-
-    setupDatabase() {
-        // Initialize IndexedDB
-        const request = indexedDB.open('gameDB', 1);
-
-        request.onerror = (event) => {
-            console.error('Database error:', event.target.error);
-        };
-
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('gameState')) {
-                db.createObjectStore('gameState', { keyPath: 'id' });
-            }
-        };
-
-        request.onsuccess = (event) => {
-            this.db = event.target.result;
-            this.loadGameState();
-        };
-    }
-
-    saveGameState() {
-        if (!this.db) return;
-
-        const transaction = this.db.transaction(['gameState'], 'readwrite');
-        const store = transaction.objectStore('gameState');
-        const gameState = {
-            id: 1,
-            player: this.player,
-            score: this.player.score,
-            timestamp: Date.now()
-        };
-
-        store.put(gameState);
-    }
-
-    loadGameState() {
-        if (!this.db) return;
-
-        const transaction = this.db.transaction(['gameState'], 'readonly');
-        const store = transaction.objectStore('gameState');
-        const request = store.get(1);
-
-        request.onsuccess = (event) => {
-            if (request.result) {
-                this.player = { ...this.player, ...request.result.player };
-            }
-        };
-    }
-
-    spawnWalls() {
-        const numberOfWalls = 5 + Math.floor(Math.random() * 6); // Random number between 5 and 10
-        
-        for (let i = 0; i < numberOfWalls; i++) {
-            const wall = {
-                x: Math.random() * (this.canvas.width - 100), // Wall width is 100
-                y: Math.random() * (this.canvas.height - 100), // Wall height is 100
-                width: 100,
-                height: 100
-            };
-            
-            // Check if wall overlaps with player spawn
-            if (!this.checkCollision(wall, {
-                x: this.canvas.width / 2 - 100,
-                y: this.canvas.height / 2 - 100,
-                width: 200,
-                height: 200
-            })) {
-                this.walls.push(wall);
-            }
-        }
-    }
-
-    tryDash() {
-        const currentTime = Date.now();
-        if (currentTime - this.player.lastDashTime >= this.player.dashCooldown) {
-            this.player.isDashing = true;
-            this.player.lastDashTime = currentTime;
-            
-            // Get dash direction from current movement
-            let dashDirX = 0;
-            let dashDirY = 0;
-            if (this.keys['ArrowUp'] || this.keys['w']) dashDirY = -1;
-            if (this.keys['ArrowDown'] || this.keys['s']) dashDirY = 1;
-            if (this.keys['ArrowLeft'] || this.keys['a']) dashDirX = -1;
-            if (this.keys['ArrowRight'] || this.keys['d']) dashDirX = 1;
-            
-            // Normalize direction
-            const length = Math.sqrt(dashDirX * dashDirX + dashDirY * dashDirY) || 1;
-            this.player.dashDirX = dashDirX / length;
-            this.player.dashDirY = dashDirY / length;
-            
-            setTimeout(() => {
-                this.player.isDashing = false;
-            }, this.player.dashDuration);
+            this.lastEnemySpawn = now;
         }
     }
 
     updatePlayer() {
-        const newX = this.player.x;
-        const newY = this.player.y;
-
-        // Store previous position
-        const prevX = this.player.x;
-        const prevY = this.player.y;
-
-        // Update position based on input
+        // Movement
         if (this.keys['ArrowUp'] || this.keys['w']) this.player.y -= this.player.speed;
         if (this.keys['ArrowDown'] || this.keys['s']) this.player.y += this.player.speed;
         if (this.keys['ArrowLeft'] || this.keys['a']) this.player.x -= this.player.speed;
         if (this.keys['ArrowRight'] || this.keys['d']) this.player.x += this.player.speed;
 
-        // Check wall collisions
-        const playerRect = {
-            x: this.player.x,
-            y: this.player.y,
-            width: 50,
-            height: 50
-        };
-
-        for (const wall of this.walls) {
-            if (this.checkCollision(playerRect, wall)) {
-                // Collision detected, revert position
-                this.player.x = prevX;
-                this.player.y = prevY;
-                break;
-            }
-        }
-
         // Keep player in bounds
         this.player.x = Math.max(0, Math.min(this.canvas.width - 50, this.player.x));
         this.player.y = Math.max(0, Math.min(this.canvas.height - 50, this.player.y));
-        
-        if (this.player.isDashing) {
-            this.player.x += this.player.dashDirX * this.player.dashSpeed;
-            this.player.y += this.player.dashDirY * this.player.dashSpeed;
-        }
     }
 
-    updateEntities() {
-        if (this.isGameOver) return;
-
-        const currentTime = Date.now();
-
-        this.entities.forEach(entity => {
-            if (entity.type === 'trader') return;
-
-            // Store previous position
-            const prevX = entity.x;
-            const prevY = entity.y;
-
-            // Initialize lastShot if not exists
-            if (entity.lastShot === undefined) {
-                entity.lastShot = 0;
-            }
-
-            // Move towards player with improved movement
-            const dx = this.player.x - entity.x;
-            const dy = this.player.y - entity.y;
+    updateEnemies() {
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+            const enemy = this.enemies[i];
+            
+            // Move towards player
+            const dx = this.player.x - enemy.x;
+            const dy = this.player.y - enemy.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance > 0) {
-                const speed = 1;
-                const angle = Math.atan2(dy, dx);
-                
-                // Add slight randomization to movement
-                const randomOffset = (Math.random() - 0.5) * 0.5;
-                entity.x += Math.cos(angle + randomOffset) * speed;
-                entity.y += Math.sin(angle + randomOffset) * speed;
-
-                // Check wall collisions
-                const entityRect = {
-                    x: entity.x,
-                    y: entity.y,
-                    width: 50,
-                    height: 50
-                };
-
-                let wallCollision = false;
-                for (const wall of this.walls) {
-                    if (this.checkCollision(entityRect, wall)) {
-                        // Collision detected, revert position
-                        entity.x = prevX;
-                        entity.y = prevY;
-                        wallCollision = true;
-                        break;
-                    }
-                }
-
-                // Only maintain distance if not colliding with wall
-                if (!wallCollision && distance < 200) {
-                    entity.x -= Math.cos(angle) * speed * 1.5;
-                    entity.y -= Math.sin(angle) * speed * 1.5;
-                }
-
-                // Entity shooting logic
-                if (currentTime - entity.lastShot >= this.entityShootCooldown) {
-                    // Check if there's a clear line of sight (no walls between entity and player)
-                    if (this.hasLineOfSight(entity, this.player)) {
-                        const shootAngle = Math.atan2(dy, dx);
-                        this.entityArrows.push({
-                            x: entity.x + 25,
-                            y: entity.y + 25,
-                            angle: shootAngle,
-                            speed: 5,
-                            damage: 15,
-                            width: 40,
-                            height: 10,
-                            isEnemy: true
-                        });
-                        entity.lastShot = currentTime;
-                    }
-                }
+                enemy.x += (dx / distance) * enemy.speed;
+                enemy.y += (dy / distance) * enemy.speed;
             }
 
             // Check collision with player
-            if (this.checkCollision(entity, this.player)) {
+            if (this.checkCollision(enemy, this.player)) {
                 this.player.health -= 1;
-                this.saveGameState();
-            }
-
-            if (entity.health <= 0) {
-                this.player.coins += 25;
-                this.updateShopUI();
-            }
-        });
-    }
-
-    hasLineOfSight(from, to) {
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const steps = Math.ceil(distance / 10); // Check every 10 pixels
-        
-        for (let i = 1; i < steps; i++) {
-            const checkX = from.x + (dx * i) / steps;
-            const checkY = from.y + (dy * i) / steps;
-            
-            const point = {
-                x: checkX,
-                y: checkY,
-                width: 1,
-                height: 1
-            };
-            
-            for (const wall of this.walls) {
-                if (this.checkCollision(point, wall)) {
-                    return false;
+                if (this.player.health <= 0) {
+                    this.gameOver = true;
                 }
             }
         }
-        return true;
+    }
+
+    checkCollision(obj1, obj2) {
+        return obj1.x < obj2.x + 50 &&
+               obj1.x + obj1.size > obj2.x &&
+               obj1.y < obj2.y + 50 &&
+               obj1.y + obj1.size > obj2.y;
     }
 
     updateArrows() {
-        // Update player arrows
-        for (let i = this.arrows.length - 1; i >= 0; i--) {
-            const arrow = this.arrows[i];
+        for (let i = this.player.arrows.length - 1; i >= 0; i--) {
+            const arrow = this.player.arrows[i];
+            
+            // Update position
             arrow.x += Math.cos(arrow.angle) * arrow.speed;
             arrow.y += Math.sin(arrow.angle) * arrow.speed;
-
-            // Check wall collisions
-            const arrowRect = {
-                x: arrow.x,
-                y: arrow.y,
-                width: arrow.width,
-                height: arrow.height
-            };
-
-            let hitWall = false;
-            for (const wall of this.walls) {
-                if (this.checkCollision(arrowRect, wall)) {
-                    this.arrows.splice(i, 1);
-                    hitWall = true;
-                    break;
-                }
-            }
-
-            if (hitWall) continue;
-
-            if (this.isArrowOutOfBounds(arrow)) {
-                this.arrows.splice(i, 1);
+            arrow.distance += arrow.speed;
+            
+            // Check if arrow should be removed
+            if (arrow.distance >= arrow.maxDistance) {
+                this.arrowPool.release(arrow);
+                this.player.arrows.splice(i, 1);
                 continue;
             }
-
-            this.checkArrowCollisions(arrow, i, this.arrows, this.entities);
-        }
-
-        // Update entity arrows
-        for (let i = this.entityArrows.length - 1; i >= 0; i--) {
-            const arrow = this.entityArrows[i];
-            arrow.x += Math.cos(arrow.angle) * arrow.speed;
-            arrow.y += Math.sin(arrow.angle) * arrow.speed;
-
-            // Check wall collisions
-            const arrowRect = {
-                x: arrow.x,
-                y: arrow.y,
-                width: arrow.width,
-                height: arrow.height
-            };
-
-            let hitWall = false;
-            for (const wall of this.walls) {
-                if (this.checkCollision(arrowRect, wall)) {
-                    this.entityArrows.splice(i, 1);
-                    hitWall = true;
-                    break;
-                }
-            }
-
-            if (hitWall) continue;
-
-            if (this.isArrowOutOfBounds(arrow)) {
-                this.entityArrows.splice(i, 1);
-                continue;
-            }
-
-            // Check collision with player
-            if (this.checkCollision(
-                { x: arrow.x, y: arrow.y, width: arrow.width, height: arrow.height },
-                { x: this.player.x, y: this.player.y, width: 50, height: 50 }
-            )) {
-                this.player.health -= arrow.damage;
-                this.entityArrows.splice(i, 1);
-            }
-        }
-    }
-
-    isArrowOutOfBounds(arrow) {
-        return arrow.x < 0 || arrow.x > this.canvas.width || 
-               arrow.y < 0 || arrow.y > this.canvas.height;
-    }
-
-    checkArrowCollisions(arrow, arrowIndex, arrowArray, targets) {
-        for (let j = targets.length - 1; j >= 0; j--) {
-            const target = targets[j];
-            if (this.checkCollision(
-                { x: arrow.x, y: arrow.y, width: arrow.width, height: arrow.height },
-                { x: target.x, y: target.y, width: 50, height: 50 }
-            )) {
-                target.health -= arrow.damage;
-                arrowArray.splice(arrowIndex, 1);
-                if (target.health <= 0) {
-                    targets.splice(j, 1);
+            
+            // Check enemy collisions
+            for (let j = this.enemies.length - 1; j >= 0; j--) {
+                const enemy = this.enemies[j];
+                if (this.checkCollision(
+                    { x: arrow.x - 5, y: arrow.y - 5, size: 10 },
+                    { x: enemy.x, y: enemy.y, size: enemy.size }
+                )) {
+                    this.enemies.splice(j, 1);
+                    this.arrowPool.release(arrow);
+                    this.player.arrows.splice(i, 1);
                     this.player.score += 10;
-                    this.saveGameState();
+                    break;
                 }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    checkCollision(rect1, rect2) {
-        return rect1.x < rect2.x + (rect2.width || 50) &&
-               rect1.x + (rect1.width || 50) > rect2.x &&
-               rect1.y < rect2.y + (rect2.height || 50) &&
-               rect1.y + (rect1.height || 50) > rect2.y;
-    }
-
-    spawnEntities() {
-        const currentTime = Date.now();
-        
-        // Wave-based enemy spawning
-        if (!this.isWaveInProgress && currentTime - this.lastWaveTime >= this.waveDelay) {
-            this.startNewWave();
-        }
-
-        // Trader spawn logic remains the same
-        if (currentTime - this.lastTraderSpawn >= this.traderSpawnInterval) {
-            const trader = {
-                type: 'trader',
-                x: Math.random() * (this.canvas.width - 50),
-                y: Math.random() * (this.canvas.height - 50),
-                health: 100
-            };
-            this.entities.push(trader);
-            this.lastTraderSpawn = currentTime;
-        }
-    }
-
-    startNewWave() {
-        console.log(`Starting wave ${this.wave}`);
-        this.isWaveInProgress = true;
-        this.enemiesRemaining = this.enemiesPerWave;
-        
-        // Spawn initial wave enemies
-        for (let i = 0; i < this.enemiesPerWave; i++) {
-            const type = this.entityTypes[Math.floor(Math.random() * this.entityTypes.length)];
-            
-            // Spawn enemies away from the player
-            let x, y;
-            do {
-                x = Math.random() * (this.canvas.width - 50);
-                y = Math.random() * (this.canvas.height - 50);
-            } while (Math.hypot(x - this.player.x, y - this.player.y) < 200); // Keep minimum distance from player
-            
-            const entity = {
-                type,
-                x,
-                y,
-                health: 100 + (this.wave * 20), // Health scales with wave
-                damage: 15 + (this.wave * 2), // Damage scales with wave
-                speed: 1 + (this.wave * 0.1), // Speed scales with wave
-                lastShot: 0
-            };
-            this.entities.push(entity);
-        }
-    }
-
-    checkWaveComplete() {
-        const remainingEnemies = this.entities.filter(e => e.type !== 'trader').length;
-        if (remainingEnemies === 0 && this.isWaveInProgress) {
-            this.wave++;
-            this.enemiesPerWave += 1;
-            this.isWaveInProgress = false;
-            this.lastWaveTime = Date.now();
-            
-            // Calculate and show wave bonus
-            const waveBonus = this.wave * 50;
-            const scoreBonus = this.wave * 100;
-            this.player.coins += waveBonus;
-            this.player.score += scoreBonus;
-            
-            // Show wave completion notification
-            const waveComplete = document.getElementById('waveComplete');
-            document.getElementById('waveBonus').textContent = waveBonus;
-            waveComplete.style.display = 'block';
-            setTimeout(() => {
-                waveComplete.style.display = 'none';
-            }, 2000);
-            
-            this.updateShopUI();
-        }
-    }
-
-    spawnPowerUp() {
-        const currentTime = Date.now();
-        if (currentTime - this.lastPowerUpSpawn >= this.powerUpSpawnInterval) {
-            const powerUpType = this.powerUpTypes[Math.floor(Math.random() * this.powerUpTypes.length)];
-            const powerUp = {
-                type: powerUpType.type,
-                x: Math.random() * (this.canvas.width - 30),
-                y: Math.random() * (this.canvas.height - 30),
-                width: 30,
-                height: 30,
-                bonus: powerUpType.bonus,
-                duration: powerUpType.duration
-            };
-            this.powerUps.push(powerUp);
-            this.lastPowerUpSpawn = currentTime;
-        }
-    }
-
-    updatePowerUps() {
-        if (!this.powerUps) {
-            this.powerUps = [];
-            return;
-        }
-
-        const playerRect = {
-            x: this.player.x,
-            y: this.player.y,
-            width: 50,
-            height: 50
-        };
-
-        for (let i = this.powerUps.length - 1; i >= 0; i--) {
-            const powerUp = this.powerUps[i];
-            if (this.checkCollision(playerRect, powerUp)) {
-                this.applyPowerUp(powerUp);
-                this.powerUps.splice(i, 1);
             }
         }
     }
 
-    applyPowerUp(powerUp) {
-        switch (powerUp.type) {
-            case 'health':
-                this.player.health = Math.min(this.player.maxHealth, this.player.health + powerUp.bonus);
-                break;
-            case 'speed':
-                const originalSpeed = this.player.speed;
-                this.player.speed += powerUp.bonus;
-                setTimeout(() => {
-                    this.player.speed = originalSpeed;
-                }, powerUp.duration);
-                break;
-            case 'invincibility':
-                this.player.isInvincible = true;
-                setTimeout(() => {
-                    this.player.isInvincible = false;
-                }, powerUp.duration);
-                break;
+    spawnWall() {
+        const now = Date.now();
+        if (now - this.lastWallSpawn >= this.wallSpawnInterval) {
+            const wall = {
+                x: Math.random() * (this.canvas.width - 100),
+                y: Math.random() * (this.canvas.height - 100),
+                width: 100,
+                height: 100
+            };
+            this.walls.push(wall);
+            this.lastWallSpawn = now;
         }
     }
 
-    checkGameOver() {
-        if (this.player.health <= 0 && !this.isGameOver) {
-            this.isGameOver = true;
-            document.getElementById('deathScreen').style.display = 'flex';
-            document.getElementById('finalScore').textContent = this.player.score;
+    spawnDoor() {
+        const now = Date.now();
+        if (now - this.lastDoorSpawn >= this.doorSpawnInterval) {
+            const door = new Door(
+                this,
+                Math.random() * (this.canvas.width - 60),
+                Math.random() * (this.canvas.height - 100)
+            );
+            this.doors.push(door);
+            this.lastDoorSpawn = now;
         }
-    }
-
-    restartGame() {
-        this.isGameOver = false;
-        this.player = {
-            x: this.canvas.width / 2,
-            y: this.canvas.height / 2,
-            speed: 3, // Reduced from 5
-            health: 5000,
-            maxHealth: 5000,
-            stamina: 100,
-            score: 0,
-            upgrades: {
-                speed: 1,
-                damage: 1
-            },
-            coins: 0,
-            dashCooldown: 2000, // 2 seconds
-            lastDashTime: 0,
-            isDashing: false,
-            dashSpeed: 15,
-            dashDuration: 150, // milliseconds
-            class: 'archer',
-            level: 1,
-            experience: 0,
-            experienceToLevel: 100,
-            elements: {
-                fire: 0,
-                ice: 0,
-                poison: 0
-            },
-            inventory: [],
-            maxInventorySize: 20,
-            skills: {},
-            achievements: new Set(),
-            statistics: {
-                enemiesKilled: 0,
-                damageDealt: 0,
-                powerUpsCollected: 0,
-                wavesCompleted: 0
-            },
-            pets: [],
-            activePet: null,
-            guild: null
-        };
-        this.entities = [];
-        this.arrows = [];
-        this.entityArrows = [];
-        this.walls = [];
-        this.spawnWalls();
-        this.updateShopUI();
-        document.getElementById('deathScreen').style.display = 'none';
     }
 
     update() {
-        if (!this.isGameOver) {
-            this.updatePlayer();
-            this.updateEntities();
-            this.updateArrows();
-            
-            // Check spawn time for entities
-            const currentTime = Date.now();
-            
-            // Only spawn new wave if current wave is complete
-            if (!this.isWaveInProgress && currentTime - this.lastWaveTime >= this.waveDelay) {
-                console.log('Wave complete, starting next wave');
-                this.wave++;
-                this.startNewWave();
-                this.lastWaveTime = currentTime;
-            }
-            
-            // Spawn trader periodically
-            if (currentTime - this.lastTraderSpawn >= this.traderSpawnInterval) {
-                const trader = {
-                    type: 'trader',
-                    x: Math.random() * (this.canvas.width - 50),
-                    y: Math.random() * (this.canvas.height - 50),
-                    health: 100
-                };
-                this.entities.push(trader);
-                this.lastTraderSpawn = currentTime;
-            }
-            
-            this.spawnPowerUp();
-            this.updatePowerUps();
-            this.checkWaveComplete();
-            this.updatePlayerState();
-            this.updateResources();
-            this.updateQuests();
-            this.checkAchievements();
-            this.spawnDoors();
-            this.updateDoors();
+        if (this.gameOver) {
+            document.getElementById('deathScreen').style.display = 'flex';
+            document.getElementById('finalScore').textContent = this.player.score;
+            return;
         }
-        this.checkGameOver();
+
+        this.updatePlayer();
+        this.spawnEnemy();
+        this.updateEnemies();
+        this.updateArrows();
+        this.spawnWall();
+        this.spawnDoor();
+        
+        // Update doors
+        for (let i = this.doors.length - 1; i >= 0; i--) {
+            const door = this.doors[i];
+            if (door.isExpired()) {
+                this.doors.splice(i, 1);
+                continue;
+            }
+            
+            // Check if player touches door
+            if (this.checkCollision(
+                { x: door.x, y: door.y, size: door.width },
+                { x: this.player.x, y: this.player.y, size: 50 }
+            )) {
+                door.teleport();
+            }
+        }
+        
+        // Update UI
+        document.getElementById('health').textContent = `Health: ${this.player.health}`;
+        document.getElementById('stamina').textContent = `Stamina: ${this.player.stamina}`;
+        document.getElementById('score').textContent = `Score: ${this.player.score}`;
     }
 
     render() {
@@ -1018,10 +355,6 @@ class Game {
         // Draw background
         if (this.images.background) {
             this.ctx.drawImage(this.images.background, 0, 0, this.canvas.width, this.canvas.height);
-        } else {
-            // Fallback background
-            this.ctx.fillStyle = '#111';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
         // Draw walls
@@ -1029,492 +362,77 @@ class Game {
             if (this.images.wall) {
                 this.ctx.drawImage(this.images.wall, wall.x, wall.y, wall.width, wall.height);
             } else {
-                // Fallback wall rendering
-                this.ctx.fillStyle = '#555';
+                this.ctx.fillStyle = '#666';
                 this.ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
             }
         });
 
-        // Draw entities
-        this.entities.forEach(entity => {
-            if (this.images[entity.type]) {
-                this.ctx.drawImage(this.images[entity.type], entity.x, entity.y, 50, 50);
-            } else {
-                // Fallback entity rendering
-                this.ctx.fillStyle = entity.type === 'trader' ? '#44f' : '#f44';
-                this.ctx.fillRect(entity.x, entity.y, 50, 50);
-            }
-            
-            // Draw health bar
-            this.ctx.fillStyle = 'red';
-            this.ctx.fillRect(entity.x, entity.y - 10, 50, 5);
-            this.ctx.fillStyle = 'green';
-            this.ctx.fillRect(entity.x, entity.y - 10, (entity.health / 100) * 50, 5);
-        });
-
-        // Draw arrows with new size
-        this.arrows.forEach(arrow => {
-            this.ctx.save();
-            this.ctx.translate(arrow.x, arrow.y);
-            this.ctx.rotate(arrow.angle);
-            if (this.images.arrow) {
-                this.ctx.drawImage(this.images.arrow, 0, -arrow.height/2, arrow.width, arrow.height);
-            } else {
-                // Fallback arrow rendering
-                this.ctx.fillStyle = '#ff0';
-                this.ctx.fillRect(0, -arrow.height/2, arrow.width, arrow.height);
-            }
-            this.ctx.restore();
-        });
-
-        // Draw entity arrows
-        this.entityArrows.forEach(arrow => {
-            this.ctx.save();
-            this.ctx.translate(arrow.x, arrow.y);
-            this.ctx.rotate(arrow.angle);
-            if (this.images.arrow) {
-                this.ctx.drawImage(this.images.arrow, 0, -arrow.height/2, arrow.width, arrow.height);
-            } else {
-                // Fallback arrow rendering
-                this.ctx.fillStyle = '#f00';
-                this.ctx.fillRect(0, -arrow.height/2, arrow.width, arrow.height);
-            }
-            this.ctx.restore();
-        });
-        
-        // Draw player
-        if (this.images.player) {
-            this.ctx.drawImage(this.images.player, this.player.x, this.player.y, 50, 50);
-        } else {
-            // Fallback player rendering
-            this.ctx.fillStyle = '#0f0';
-            this.ctx.fillRect(this.player.x, this.player.y, 50, 50);
-        }
-
-        // Update UI
-        document.getElementById('health').textContent = `Health: ${this.player.health}`;
-        document.getElementById('stamina').textContent = `Dash Cooldown: ${Math.ceil(Math.max(0, this.player.dashCooldown - (Date.now() - this.player.lastDashTime)) / 1000)}s`;
-        document.getElementById('resources').textContent = `Score: ${this.player.score} | Coins: ${this.player.coins}`;
-
-        // Draw wave information
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '20px Arial';
-        this.ctx.fillText(`Wave: ${this.wave}`, 10, this.canvas.height - 20);
-
-        this.renderEnvironmentEffects();
-        this.renderMinimap();
-        this.renderUI();
-        this.renderDoors();
-    }
-
-    gameLoop(currentTime = 0) {
-        const deltaTime = currentTime - this.lastTime;
-        this.lastTime = currentTime;
-
-        this.update();
-        this.render();
-
-        requestAnimationFrame((time) => this.gameLoop(time));
-    }
-
-    start() {
-        // Game starts when all images are loaded
-        this.gameLoop();
-    }
-
-    // New method for leveling system
-    gainExperience(amount) {
-        this.player.experience += amount;
-        while (this.player.experience >= this.player.experienceToLevel) {
-            this.levelUp();
-        }
-    }
-
-    levelUp() {
-        this.player.experience -= this.player.experienceToLevel;
-        this.player.level++;
-        this.player.experienceToLevel = Math.floor(this.player.experienceToLevel * 1.5);
-        this.player.maxHealth += 100;
-        this.player.health = this.player.maxHealth;
-        this.showLevelUpNotification();
-    }
-
-    // Initialize skill trees for each class
-    initializeSkillTrees() {
-        this.skillTrees = {
-            warrior: [
-                { id: 'heavyStrike', level: 0, maxLevel: 5, damage: 50 },
-                { id: 'toughness', level: 0, maxLevel: 3, healthBonus: 200 },
-                { id: 'whirlwind', level: 0, maxLevel: 1, unlockLevel: 5 }
-            ],
-            archer: [
-                { id: 'preciseShot', level: 0, maxLevel: 5, critChance: 10 },
-                { id: 'quickDraw', level: 0, maxLevel: 3, attackSpeed: 10 },
-                { id: 'multishot', level: 0, maxLevel: 1, unlockLevel: 5 }
-            ],
-            mage: [
-                { id: 'elementalMastery', level: 0, maxLevel: 5, elementalDamage: 20 },
-                { id: 'manaShield', level: 0, maxLevel: 3, damageReduction: 15 },
-                { id: 'chainLightning', level: 0, maxLevel: 1, unlockLevel: 5 }
-            ]
-        };
-    }
-
-    // Quest system
-    initializeQuestSystem() {
-        this.quests = {
-            daily: [],
-            story: [],
-            achievement: []
-        };
-        this.generateDailyQuests();
-    }
-
-    generateDailyQuests() {
-        const questTypes = [
-            { type: 'kill', count: 20, reward: 100 },
-            { type: 'collect', count: 10, reward: 150 },
-            { type: 'survive', waves: 5, reward: 200 }
-        ];
-        // Reset and generate new daily quests
-        this.quests.daily = questTypes.map(quest => ({
-            ...quest,
-            progress: 0,
-            completed: false
-        }));
-    }
-
-    // Updated sound system initialization
-    initializeSoundSystem() {
-        this.sounds = {};
-        const soundFiles = {
-            background: 'sounds/background.mp3',
-            attack: 'sounds/attack.mp3',
-            powerup: 'sounds/powerup.mp3',
-            levelUp: 'sounds/levelup.mp3'
-        };
-
-        for (const [key, src] of Object.entries(soundFiles)) {
-            const audio = new Audio();
-            audio.addEventListener('error', () => {
-                console.warn(`Failed to load sound: ${src}`);
-            });
-            audio.src = src;
-            if (key === 'background') {
-                audio.loop = true;
-            }
-            this.sounds[key] = audio;
-        }
-    }
-
-    // Resource system
-    spawnInitialResources() {
-        for (let i = 0; i < 10; i++) {
-            this.spawnResource();
-        }
-    }
-
-    spawnResource() {
-        if (!this.resourceTypes || !this.resourceTypes.length) {
-            console.warn('Resource types not initialized');
-            return;
-        }
-
-        const type = this.resourceTypes[Math.floor(Math.random() * this.resourceTypes.length)];
-        const resource = {
-            type,
-            x: Math.random() * (this.canvas.width - 30),
-            y: Math.random() * (this.canvas.height - 30),
-            amount: Math.floor(Math.random() * 5) + 1
-        };
-        this.resources.push(resource);
-    }
-
-    // Event system
-    initializeEventSystem() {
-        this.events = {
-            current: null,
-            available: [
-                {
-                    name: 'Blood Moon',
-                    duration: 300000,
-                    effect: () => this.startBloodMoonEvent()
-                },
-                {
-                    name: 'Treasure Hunt',
-                    duration: 180000,
-                    effect: () => this.startTreasureHuntEvent()
-                }
-            ]
-        };
-        setInterval(() => this.checkForRandomEvent(), 600000);
-    }
-
-    // Leaderboard system
-    setupLeaderboard() {
-        this.leaderboard = {
-            highScores: [],
-            weeklyBest: [],
-            updateInterval: 60000
-        };
-        setInterval(() => this.updateLeaderboard(), this.leaderboard.updateInterval);
-    }
-
-    // Tutorial system
-    initializeTutorial() {
-        this.tutorial = {
-            steps: [
-                { id: 'movement', completed: false, text: 'Use WASD to move' },
-                { id: 'combat', completed: false, text: 'Click to attack' },
-                { id: 'upgrade', completed: false, text: 'Press U to open upgrades' }
-            ],
-            currentStep: 0,
-            isActive: true
-        };
-    }
-
-    // Update enhanced player state
-    updatePlayerState() {
-        if (this.player.activePet) {
-            this.updatePetBehavior();
-        }
-        this.updateEnvironment();
-        this.checkQuestProgress();
-        this.updateStatistics();
-    }
-
-    // Environment updates
-    updateEnvironment() {
-        if (!this.environment) return; // Safety check
-        
-        const now = Date.now();
-        // Update day/night cycle
-        this.environment.time = (now % this.environment.dayLength) / this.environment.dayLength * 24;
-        
-        // Update weather
-        if (now - this.environment.lastWeatherChange > this.environment.weatherDuration) {
-            this.environment.weather = this.environment.weatherEffects[
-                Math.floor(Math.random() * this.environment.weatherEffects.length)
-            ];
-            this.environment.lastWeatherChange = now;
-        }
-    }
-
-    renderEnvironmentEffects() {
-        if (!this.environment) return; // Safety check
-        
-        // Apply visual effects based on time and weather
-        const timeOfDay = this.environment.time;
-        const alpha = timeOfDay > 12 ? (timeOfDay - 12) / 12 : 1 - (timeOfDay / 12);
-        
-        // Night overlay
-        this.ctx.fillStyle = `rgba(0, 0, 50, ${alpha * 0.5})`;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Weather effects
-        switch (this.environment.weather) {
-            case 'rain':
-                this.renderRain();
-                break;
-            case 'storm':
-                this.renderStorm();
-                break;
-            case 'fog':
-                this.renderFog();
-                break;
-        }
-    }
-
-    renderRain() {
-        for (let i = 0; i < 100; i++) {
-            const x = Math.random() * this.canvas.width;
-            const y = Math.random() * this.canvas.height;
-            this.ctx.fillStyle = 'rgba(200, 200, 255, 0.5)';
-            this.ctx.fillRect(x, y, 1, 5);
-        }
-    }
-
-    renderStorm() {
-        this.renderRain();
-        if (Math.random() < 0.1) { // 10% chance of lightning
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        }
-    }
-
-    renderFog() {
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-
-    renderMinimap() {
-        const mapSize = 150;
-        const mapX = this.canvas.width - mapSize - 10;
-        const mapY = 10;
-        
-        // Draw minimap background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        this.ctx.fillRect(mapX, mapY, mapSize, mapSize);
-        
-        // Draw entities on minimap
-        this.ctx.fillStyle = 'red';
-        this.entities.forEach(entity => {
-            const minimapX = mapX + (entity.x / this.canvas.width) * mapSize;
-            const minimapY = mapY + (entity.y / this.canvas.height) * mapSize;
-            this.ctx.fillRect(minimapX, minimapY, 3, 3);
-        });
-        
-        // Draw player on minimap
-        this.ctx.fillStyle = 'blue';
-        const playerMinimapX = mapX + (this.player.x / this.canvas.width) * mapSize;
-        const playerMinimapY = mapY + (this.player.y / this.canvas.height) * mapSize;
-        this.ctx.fillRect(playerMinimapX, playerMinimapY, 4, 4);
-    }
-
-    renderUI() {
-        // Draw experience bar
-        const expBarWidth = 200;
-        const expBarHeight = 10;
-        const expBarX = 10;
-        const expBarY = this.canvas.height - 30;
-        
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        this.ctx.fillRect(expBarX, expBarY, expBarWidth, expBarHeight);
-        
-        const expProgress = this.player.experience / this.player.experienceToLevel;
-        this.ctx.fillStyle = 'rgb(0, 255, 200)';
-        this.ctx.fillRect(expBarX, expBarY, expBarWidth * expProgress, expBarHeight);
-        
-        // Draw level
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '16px Arial';
-        this.ctx.fillText(`Level ${this.player.level}`, expBarX, expBarY - 5);
-        
-        // Draw current quests
-        this.renderQuestLog();
-    }
-
-    renderQuestLog() {
-        const questY = 100;
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '14px Arial';
-        this.quests.daily.forEach((quest, index) => {
-            if (!quest.completed) {
-                this.ctx.fillText(
-                    `${quest.type}: ${quest.progress}/${quest.count}`,
-                    10,
-                    questY + (index * 20)
-                );
-            }
-        });
-    }
-
-    showLevelUpNotification() {
-        const levelUp = document.getElementById('levelUp');
-        levelUp.style.display = 'block';
-        setTimeout(() => {
-            levelUp.style.display = 'none';
-        }, 2000);
-    }
-
-    // Door methods
-    spawnDoors() {
-        const currentTime = Date.now();
-        if (currentTime - this.lastDoorSpawn >= this.doorSpawnInterval && this.doors.length < this.maxDoors) {
-            // Try to find a valid spawn location
-            let x, y, isValid;
-            do {
-                x = Math.random() * (this.canvas.width - 60);
-                y = Math.random() * (this.canvas.height - 100);
-                isValid = true;
-
-                // Check collision with walls
-                const doorRect = { x, y, width: 60, height: 100 };
-                for (const wall of this.walls) {
-                    if (this.checkCollision(doorRect, wall)) {
-                        isValid = false;
-                        break;
-                    }
-                }
-
-                // Check distance from player
-                const distanceToPlayer = Math.hypot(x - this.player.x, y - this.player.y);
-                if (distanceToPlayer < 150) { // Minimum 150px from player
-                    isValid = false;
-                }
-
-                // Check distance from other doors
-                for (const door of this.doors) {
-                    const distanceToDoor = Math.hypot(x - door.x, y - door.y);
-                    if (distanceToDoor < 200) { // Minimum 200px between doors
-                        isValid = false;
-                        break;
-                    }
-                }
-            } while (!isValid);
-
-            this.doors.push(new Door(this, x, y));
-            this.lastDoorSpawn = currentTime;
-        }
-
-        // Remove expired doors
-        this.doors = this.doors.filter(door => !door.isExpired());
-    }
-
-    updateDoors() {
-        // Check for player collision with doors
-        const playerRect = {
-            x: this.player.x,
-            y: this.player.y,
-            width: 50,
-            height: 50
-        };
-
-        for (const door of this.doors) {
-            if (this.checkCollision(playerRect, door)) {
-                door.teleport();
-                break;
-            }
-        }
-    }
-
-    renderDoors() {
         // Draw doors
         this.doors.forEach(door => {
             if (this.images.door) {
                 this.ctx.drawImage(this.images.door, door.x, door.y, door.width, door.height);
-                
-                // Draw portal effect
-                const gradient = this.ctx.createRadialGradient(
-                    door.x + door.width/2, door.y + door.height/2, 5,
-                    door.x + door.width/2, door.y + door.height/2, 30
-                );
-                gradient.addColorStop(0, 'rgba(100, 200, 255, 0.3)');
-                gradient.addColorStop(1, 'rgba(100, 200, 255, 0)');
-                this.ctx.fillStyle = gradient;
-                this.ctx.fillRect(door.x - 10, door.y - 10, door.width + 20, door.height + 20);
+            } else {
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.fillRect(door.x, door.y, door.width, door.height);
+            }
+        });
 
-                // Draw destination text
-                this.ctx.fillStyle = 'white';
-                this.ctx.font = '12px Arial';
-                const gameName = door.destination.split('/').pop().replace(/-/g, ' ');
-                const textWidth = this.ctx.measureText(gameName).width;
-                this.ctx.fillText(gameName, door.x + (door.width - textWidth)/2, door.y - 5);
+        // Draw player
+        if (this.images.player) {
+            this.ctx.drawImage(this.images.player, this.player.x, this.player.y, 50, 50);
+        } else {
+            this.ctx.fillStyle = 'blue';
+            this.ctx.fillRect(this.player.x, this.player.y, 50, 50);
+        }
+
+        // Draw arrows
+        this.player.arrows.forEach(arrow => {
+            if (this.images.arrow) {
+                this.ctx.save();
+                this.ctx.translate(arrow.x, arrow.y);
+                this.ctx.rotate(arrow.angle);
+                this.ctx.drawImage(this.images.arrow, -25, -5, 50, 10);
+                this.ctx.restore();
+            } else {
+                this.ctx.save();
+                this.ctx.translate(arrow.x, arrow.y);
+                this.ctx.rotate(arrow.angle);
+                this.ctx.fillStyle = 'yellow';
+                this.ctx.fillRect(-10, -2, 20, 4);
+                this.ctx.restore();
+            }
+        });
+
+        // Draw enemies
+        this.enemies.forEach(enemy => {
+            if (this.images.enemy) {
+                this.ctx.drawImage(this.images.enemy, enemy.x, enemy.y, enemy.size, enemy.size);
+            } else {
+                this.ctx.fillStyle = 'red';
+                this.ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
             }
         });
     }
+
+    gameLoop() {
+        this.update();
+        this.render();
+        requestAnimationFrame(() => this.gameLoop());
+    }
+
+    restartGame() {
+        this.player.health = 100;
+        this.player.stamina = 100;
+        this.player.score = 0;
+        this.player.x = this.canvas.width / 2;
+        this.player.y = this.canvas.height / 2;
+        this.enemies = [];
+        this.gameOver = false;
+        document.getElementById('deathScreen').style.display = 'none';
+    }
 }
 
-// Game setup and initialization
+// Initialize game when window loads
 window.onload = () => {
-    window.game = new Game(); // Make game globally accessible
-
-    // Initialize shop button
-    const shopBtn = document.createElement('button');
-    shopBtn.id = 'shopButton';
-    shopBtn.textContent = 'Shop';
-    shopBtn.style.position = 'fixed';
-    shopBtn.style.top = '10px';
-    shopBtn.style.right = '10px';
-    document.body.appendChild(shopBtn);
+    window.game = new Game();
 };
