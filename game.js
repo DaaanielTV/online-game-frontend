@@ -1504,6 +1504,17 @@ class Game {
         });
     }
 }
+
+// Game setup and initialization
 window.onload = () => {
-    window.game = new Game();
+    window.game = new Game(); // Make game globally accessible
+
+    // Initialize shop button
+    const shopBtn = document.createElement('button');
+    shopBtn.id = 'shopButton';
+    shopBtn.textContent = 'Shop';
+    shopBtn.style.position = 'fixed';
+    shopBtn.style.top = '10px';
+    shopBtn.style.right = '10px';
+    document.body.appendChild(shopBtn);
 };
