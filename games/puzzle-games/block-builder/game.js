@@ -1,6 +1,6 @@
 // 10. Block Builder: Physics-based construction puzzle game
 
-import { GameEngine, Entity, InputManager } from '../../shared/engine.js';
+import { GameEngine, Entity, InputManager, AssetManager } from '../../shared/engine.js';
 
 class ColorTile extends Entity {
     constructor(x, y, color, size = 60) {
@@ -83,13 +83,30 @@ class BlockBuilderGame {
     constructor(canvasId) {
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
+        this.assets = new AssetManager();
         this.blocks = [];
         this.selectedBlockType = 'wood';
         this.isPlacing = false;
         this.setup();
     }
 
-    setup() {
+    async setup() {
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/game-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
+        // Add background rendering first
+        this.engine.addEntity({
+            render: (ctx) => {
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
+
         // Add ground
         const ground = new Block(0, this.engine.canvas.height - 40, 'stone');
         ground.width = this.engine.canvas.width;

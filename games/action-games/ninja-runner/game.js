@@ -210,14 +210,32 @@ class NinjaRunnerGame {
         this.player = null;
         this.isGameOver = false;
         this.spawnTimer = 0;
+        this.assets = new AssetManager();
         this.setup();
     }
 
-    setup() {
+    async setup() {
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/mystic-forest-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
         // Create player
         this.player = new Ninja(100, 300);
         this.player.game = this;
         this.engine.addEntity(this.player);
+
+        // Add background rendering
+        this.engine.addEntity({
+            render: (ctx) => {
+                // Draw background first
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
 
         // Create initial platforms
         this.createPlatforms();

@@ -112,12 +112,27 @@ class TradeRoutesGame {
     constructor(canvasId) {
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
-        this.cities = [];
-        this.routes = [];
-        this.selectedCity = null;
-        this.money = 1000;
-        this.reputation = 50;
-        this.turn = 1;
+        this.assets = new AssetManager();
+        this.setup();
+    }
+
+    async setup() {
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/nature-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
+        // Add background rendering
+        this.engine.addEntity({
+            render: (ctx) => {
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
+
         this.setupGame();
     }
 

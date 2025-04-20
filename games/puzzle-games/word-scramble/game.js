@@ -1,9 +1,10 @@
-import { GameEngine, Entity, InputManager } from '../../shared/engine.js';
+import { GameEngine, Entity, InputManager, AssetManager } from '../../shared/engine.js';
 
 class WordGame {
     constructor(canvasId) {
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
+        this.assets = new AssetManager();
         this.score = 0;
         this.timeLeft = 60; // 60 seconds per round
         this.currentWord = '';
@@ -20,7 +21,23 @@ class WordGame {
         this.setup();
     }
 
-    setup() {
+    async setup() {
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/game-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
+        // Add background rendering first
+        this.engine.addEntity({
+            render: (ctx) => {
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
+
         // Add keyboard input handling
         document.addEventListener('keydown', (e) => this.handleKeyInput(e));
 

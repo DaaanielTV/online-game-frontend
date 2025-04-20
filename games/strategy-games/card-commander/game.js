@@ -57,6 +57,7 @@ class CardCommander {
     constructor(canvasId) {
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
+        this.assets = new AssetManager();
         this.cards = [];
         this.deck = [];
         this.hand = [];
@@ -69,12 +70,28 @@ class CardCommander {
         this.setupGame();
     }
 
-    setupGame() {
+    async setupGame() {
         this.engine.init();
         this.createInitialDeck();
         this.setupEventListeners();
         this.drawInitialHand();
         
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/game-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
+        // Add background rendering first
+        this.engine.addEntity({
+            render: (ctx) => {
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
+
         // Add game state rendering
         this.engine.addEntity({
             render: (ctx) => this.renderGameState(ctx)

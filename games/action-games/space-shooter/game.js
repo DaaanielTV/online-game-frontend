@@ -158,7 +158,7 @@ class SpaceShooterGame {
         try {
             await this.assets.loadImage('player', '../../enemy/player-avatar.png');
             await this.assets.loadImage('enemy', '../../enemy/tricaluctus(underwater-monster).png');
-            await this.assets.loadImage('background', '../../enemy/game-background.png');
+            await this.assets.loadImage('background', '../../enemy/space-background.png');
         } catch (error) {
             console.warn('Failed to load some assets, using fallback graphics');
         }

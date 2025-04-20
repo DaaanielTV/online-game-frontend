@@ -291,13 +291,26 @@ class RobotWarsGame {
     constructor(canvasId) {
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
-        this.player = null;
-        this.isGameOver = false;
-        this.partTypes = ['chassis', 'weapon', 'armor', 'wheels'];
-        this.setup();
+        this.assets = new AssetManager();
     }
 
-    setup() {
+    async setup() {
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/game-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
+        // Add background rendering first
+        this.engine.addEntity({
+            render: (ctx) => {
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
+
         // Create player robot
         this.player = new Robot(100, 300, true);
         this.player.game = this;

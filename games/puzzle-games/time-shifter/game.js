@@ -100,6 +100,7 @@ class TimeShifterGame {
     constructor(canvasId) {
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
+        this.assets = new AssetManager();
         this.currentLevel = 0;
         this.timeState = 'playing'; // playing, rewinding, paused
         this.rewindIndex = 0;
@@ -135,7 +136,23 @@ class TimeShifterGame {
         ];
     }
 
-    setup() {
+    async setup() {
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/game-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
+        // Add background rendering first
+        this.engine.addEntity({
+            render: (ctx) => {
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
+        
         this.loadLevel(this.currentLevel);
 
         // Add UI entity

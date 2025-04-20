@@ -92,6 +92,7 @@ class CityPlanner {
     constructor(canvasId) {
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
+        this.assets = new AssetManager();
         this.buildings = [];
         this.grid = [];
         this.gridSize = 20;
@@ -118,7 +119,23 @@ class CityPlanner {
         this.setupGame();
     }
 
-    setupGame() {
+    async setupGame() {
+        // Load background
+        try {
+            await this.assets.loadImage('background', '../../enemy/nature-background.png');
+        } catch (error) {
+            console.warn('Failed to load background, using fallback');
+        }
+
+        // Add background rendering
+        this.engine.addEntity({
+            render: (ctx) => {
+                if (this.assets.getImage('background')) {
+                    ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+                }
+            }
+        });
+
         this.engine.init();
         this.initializeGrid();
         this.setupEventListeners();
