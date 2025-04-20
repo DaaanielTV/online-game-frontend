@@ -1,3 +1,19 @@
+// Define ArrowPool class before Game class
+class ArrowPool {
+    constructor() {
+        this.pool = [];
+    }
+    
+    get() {
+        return this.pool.pop() || { x: 0, y: 0, angle: 0, active: false };
+    }
+    
+    release(arrow) {
+        arrow.active = false;
+        this.pool.push(arrow);
+    }
+}
+
 // Available games for teleportation
 const AVAILABLE_GAMES = [
     'action-games/monster-arena',
@@ -185,6 +201,9 @@ class Game {
         this.initializeEventSystem();
         this.setupLeaderboard();
         this.initializeTutorial();
+
+        // Initialize arrow pool
+        this.arrowPool = new ArrowPool();
 
         // DO NOT start game loop here, it will be started after images load
     }
