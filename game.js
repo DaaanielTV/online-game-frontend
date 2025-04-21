@@ -48,7 +48,9 @@ class Door {
     }
 
     teleport() {
-        window.location.href = `/games/${this.destination}/index.html`;
+        // Fix the path to be relative to the current location
+        const gamePath = `./games/${this.destination}/index.html`;
+        window.location.href = gamePath;
     }
 }
 
