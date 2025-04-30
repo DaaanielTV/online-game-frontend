@@ -255,7 +255,9 @@ class ColorGame {
         ctx.fillText('Match the small colored squares in the corners', this.engine.canvas.width / 2, this.engine.canvas.height - 10);
     }
 
-    start() {
+    async start() {
+        // Wait for all assets to load before starting the game
+        await this.assets.waitForLoad();
         this.engine.init();
     }
 }

@@ -18,43 +18,42 @@
             font-family: Arial, sans-serif;
         }
         canvas {
-            border: 2px solid #E91E63;
-            background: #fff;
-            margin-bottom: 20px;
+            border: 2px solid #FF00FF;
+            background: #16213e;
+            margin: 20px;
         }
-        .controls {
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            max-width: 600px;
-        }
-        .color-palette {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-            justify-content: center;
-        }
-        .color-swatch {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid white;
+            border-radius: 10px;
+            display: none;
         }
     </style>
 </head>
 <body>
     <h1>Color Match</h1>
-    <canvas id="gameCanvas" width="600" height="600"></canvas>
-    <div class="controls">
-        <p>Match colors by clicking tiles to swap them. Create art pieces by matching patterns!</p>
-        <div class="color-palette"></div>
-    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="loading" class="loading">Loading...</div>
     <script type="module">
-        import ColorMatch from './game.js';
-        const game = new ColorMatch('gameCanvas');
-        game.start();
+        import ColorGame from './game.js';
+        
+        // Show loading indicator
+        const loading = document.getElementById('loading');
+        loading.style.display = 'block';
+        
+        const game = new ColorGame('gameCanvas');
+        game.start().then(() => {
+            // Hide loading indicator once game has started
+            loading.style.display = 'none';
+        }).catch(error => {
+            console.error('Failed to start game:', error);
+            loading.textContent = 'Failed to load game';
+        });
     </script>
 </body>
 </html>

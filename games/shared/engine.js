@@ -98,33 +98,54 @@ class InputManager {
 class AssetManager {
     constructor() {
         this.images = new Map();
-        this.sounds = new Map();
+        this.loadPromises = [];
+        this.rootPath = this.getRootPath();
     }
 
-    async loadImage(key, url) {
-        return new Promise((resolve, reject) => {
+    getRootPath() {
+        // Get the root path by checking the current URL
+        const pathParts = window.location.pathname.split('/');
+        const onlineGameIndex = pathParts.findIndex(part => part === 'online-game');
+        if (onlineGameIndex !== -1) {
+            return pathParts.slice(0, onlineGameIndex + 1).join('/');
+        }
+        return '';
+    }
+
+    async loadImage(key, relativePath) {
+        try {
+            // Convert relative path to absolute
+            const absolutePath = `${this.rootPath}/${relativePath}`;
             const img = new Image();
-            img.onload = () => {
-                this.images.set(key, img);
-                resolve(img);
-            };
-            img.onerror = reject;
-            img.src = url;
-        });
-    }
-
-    async loadSound(key, url) {
-        const audio = new Audio(url);
-        this.sounds.set(key, audio);
-        return audio;
+            const loadPromise = new Promise((resolve, reject) => {
+                img.onload = () => {
+                    this.images.set(key, img);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    console.error(`Failed to load image: ${absolutePath}`);
+                    reject(new Error(`Failed to load image: ${absolutePath}`));
+                };
+            });
+            img.src = absolutePath;
+            this.loadPromises.push(loadPromise);
+            return loadPromise;
+        } catch (error) {
+            console.error(`Error loading image ${key}:`, error);
+            throw error;
+        }
     }
 
     getImage(key) {
         return this.images.get(key);
     }
 
-    getSound(key) {
-        return this.sounds.get(key);
+    async waitForLoad() {
+        try {
+            await Promise.all(this.loadPromises);
+        } catch (error) {
+            console.error('Error loading assets:', error);
+        }
     }
 }
 
