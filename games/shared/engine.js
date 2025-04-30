@@ -2,15 +2,24 @@
 class GameEngine {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) {
+            throw new Error(`Canvas with id '${canvasId}' not found`);
+        }
         this.ctx = this.canvas.getContext('2d');
         this.entities = [];
         this.isRunning = false;
         this.lastTimestamp = 0;
+
+        // Make sure canvas is visible
+        this.canvas.style.display = 'block';
     }
 
     // Initialize the game engine
     init() {
         this.isRunning = true;
+        // Initial resize
+        this.resize();
+        // Start the game loop
         window.requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
     }
 
@@ -61,8 +70,9 @@ class GameEngine {
 
     // Handle window resize
     resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        // Update canvas dimensions
+        this.canvas.width = this.canvas.clientWidth;
+        this.canvas.height = this.canvas.clientHeight;
     }
 
     // Stop game loop

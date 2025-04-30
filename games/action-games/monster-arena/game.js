@@ -222,10 +222,21 @@ class MonsterArenaGame {
         this.monstersRemaining = 0;
         this.spawnTimer = 0;
         this.isGameOver = false;
+
+        // Add window resize handler
+        window.addEventListener('resize', () => this.handleResize());
         this.setup();
     }
 
+    handleResize() {
+        this.engine.canvas.width = window.innerWidth;
+        this.engine.canvas.height = window.innerHeight;
+    }
+
     async setup() {
+        // Set initial canvas size
+        this.handleResize();
+
         // Load background
         try {
             await this.assets.loadImage('background', '../../enemy/game-background.png');

@@ -16,13 +16,20 @@
             background: #1a1a2e;
             color: #fff;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
         canvas {
             border: 2px solid #FFC107;
             background: #000;
-            margin-bottom: 20px;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
         }
         .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 8px;
@@ -39,7 +46,7 @@
 </head>
 <body>
     <h1>Monster Arena</h1>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <div class="controls">
         <p>Controls:</p>
         <p>
