@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hero's Journey - Story-Driven RPG</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+        }
+        canvas {
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script type="module">
+        import HerosJourneyGame from './game.js';
+        
+        window.onload = () => {
+            const game = new HerosJourneyGame('gameCanvas');
+            game.start();
+        };
+    </script>
+</body>
+</html>

@@ -4,12 +4,7 @@
 
 
 
-## RPG Games
-16. Pixel Heroes: Classic RPG with modern mechanics
-17. Monster Tamer: Collect and train creatures
-18. Dungeon Crawler: Procedurally generated dungeons
-19. Magic Academy: Learn and master spell combinations
-20. Hero's Journey: Story-driven adventure RPG
+
 
 ## Simulation Games
 21. Pet Shelter: Manage and care for virtual pets
