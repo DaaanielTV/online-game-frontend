@@ -4,15 +4,6 @@
 
 
 
-
-
-## Simulation Games
-21. Pet Shelter: Manage and care for virtual pets
-22. Farm Life: Build and maintain a virtual farm
-23. Restaurant Rush: Cook and serve in a busy restaurant
-24. Hospital Manager: Run a growing medical facility
-25. Zoo Keeper: Design and maintain a virtual zoo
-
 ## Racing Games
 26. Kart Dash: Multiplayer racing with power-ups
 27. Gravity Racer: Race on tracks with changing gravity
