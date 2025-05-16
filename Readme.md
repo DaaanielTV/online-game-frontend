@@ -1,24 +1,19 @@
-# Stranded Horizons
+# Browser Game Portal
 
-A multiplayer tactical 2D top-down shooter with ability-based combat.
+A collection of browser-based games built with vanilla JavaScript, HTML5 Canvas, and CSS.
 
-## Quick Start
-```bash
-git clone https://github.com/DaaanielTV/online-game.git
-cd online-game
-npm install
-npm run start
-```
+## Features
 
-## Core Features
-- Tactical 2D top-down shooter gameplay
-- Valorant-inspired ability system
-- Real-time multiplayer with dedicated server
-- Character classes with unique abilities
-- Strategic team-based combat
-- Custom map system
-- Weapon economy system
-- Round-based matches
+- Pure JavaScript implementation - no external dependencies
+- HTML5 Canvas-based game engine
+- Multiple game categories:
+  - Action Games
+  - Puzzle Games
+  - RPG Games
+  - Strategy Games
+- Responsive design
+- Asset management system
+- Input handling system
 
 ## Controls
 - WASD/Arrow Keys: Movement
