@@ -24,7 +24,7 @@ This document outlines the professional code formatting guidelines and best prac
             <!-- Logo: represents site branding -->
             <!-- Image element for logo with alternative text -->
             <!-- Consider SVG format for scalability -->
-            <img src="logo.svg" alt="Company Logo">
+            <img src="logo.png" alt="Company Logo">
         </header>
         ```
 
