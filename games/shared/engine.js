@@ -1,17 +1,58 @@
-// Core Game Engine Utilities
+/**
+ * Core Game Engine Module
+ * Provides centralized game loop and rendering functionality for all games
+ * Handles canvas management, entity updates, and timing
+ */
 class GameEngine {
+    /**
+     * Initialize the game engine with a canvas
+     * @param {string} canvasId - The ID of the canvas element to use
+     * @throws {Error} If canvas element is not found
+     */
     constructor(canvasId) {
+        // Initialize and validate core components
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) {
             throw new Error(`Canvas with id '${canvasId}' not found`);
         }
+        
+        // Set up rendering context
         this.ctx = this.canvas.getContext('2d');
+        if (!this.ctx) {
+            throw new Error('Failed to get 2D rendering context');
+        }
+
+        // Entity management system
         this.entities = [];
+        
+        // Game state control
         this.isRunning = false;
         this.lastTimestamp = 0;
+        this.frameId = null;
 
-        // Make sure canvas is visible
+        // Set up event listeners
+        this.setupEventListeners();
+        
+        // Ensure canvas is properly displayed
         this.canvas.style.display = 'block';
+    }
+
+    /**
+     * Set up event listeners for window and canvas events
+     * @private
+     */
+    setupEventListeners() {
+        // Handle window resize
+        window.addEventListener('resize', () => this.resize());
+        
+        // Handle visibility change to pause/resume
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.pause();
+            } else {
+                this.resume();
+            }
+        });
     }
 
     // Initialize the game engine
@@ -78,6 +119,19 @@ class GameEngine {
     // Stop game loop
     stop() {
         this.isRunning = false;
+    }
+
+    // Pause the game
+    pause() {
+        this.isRunning = false;
+    }
+
+    // Resume the game
+    resume() {
+        if (!this.isRunning) {
+            this.isRunning = true;
+            window.requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
+        }
     }
 }
 

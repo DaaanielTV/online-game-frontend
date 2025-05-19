@@ -1,77 +1,97 @@
-// Game data
+/**
+ * Main Game Configuration and Initialization
+ * Defines available games and their metadata
+ */
+
+// Game category definitions with metadata
 const GAMES = {
     action: [
         {
             name: "Monster Arena",
             description: "Battle various creatures in a customizable arena setting",
-            image: "enemy/monster.png"
+            image: "enemy/monster.png",
+            path: "games/action-games/monster-arena"
         },
         {
             name: "Robot Wars",
             description: "Build and battle robots with various parts",
-            image: "enemy/robot.png"
+            image: "enemy/robot.png",
+            path: "games/action-games/robot-wars"
         },
         {
             name: "Ninja Runner",
             description: "Run, jump, and fight through obstacle courses",
-            image: "enemy/ninja.png"
+            image: "enemy/ninja.png",
+            path: "games/action-games/ninja-runner"
         }
     ],
     puzzle: [
         {
             name: "Color Match",
             description: "Match colors to solve puzzles",
-            image: "enemy/colors.png"
+            image: "enemy/colors.png",
+            path: "games/puzzle-games/color-match"
         },
         {
             name: "Logic Gates",
             description: "Build circuits using logic gates",
-            image: "enemy/logic.png"
+            image: "enemy/logic.png",
+            path: "games/puzzle-games/logic-gates"
         },
         {
             name: "Time Shifter",
             description: "Manipulate time to solve puzzles",
-            image: "enemy/time.png"
+            image: "enemy/time.png",
+            path: "games/puzzle-games/time-shifter"
         }
     ],
     rpg: [
         {
             name: "Dungeon Crawler",
             description: "Explore dungeons, fight monsters, find treasure",
-            image: "enemy/dungeon.png"
+            image: "enemy/dungeon.png",
+            path: "games/rpg-games/dungeon-crawler"
         },
         {
             name: "Monster Tamer",
             description: "Catch and train monsters",
-            image: "enemy/tamer.png"
+            image: "enemy/tamer.png",
+            path: "games/rpg-games/monster-tamer"
         },
         {
             name: "Pixel Heroes",
             description: "Classic RPG adventure",
-            image: "enemy/hero.png"
+            image: "enemy/hero.png",
+            path: "games/rpg-games/pixel-heroes"
         }
     ],
     strategy: [
         {
             name: "City Planner",
             description: "Build and manage your own city",
-            image: "enemy/city.png"
+            image: "enemy/city.png",
+            path: "games/strategy-games/city-planner"
         },
         {
             name: "Space Colony",
             description: "Establish a colony in space",
-            image: "enemy/space.png"
+            image: "enemy/space.png",
+            path: "games/strategy-games/space-colony"
         },
         {
             name: "Trade Routes",
             description: "Manage trade between cities",
-            image: "enemy/trade.png"
+            image: "enemy/trade.png",
+            path: "games/strategy-games/trade-routes"
         }
     ]
 };
 
-// Initialize games when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * Initialize the game selection interface
+ * Sets up event listeners and loads game data
+ */
+function initGameSelection() {
     // Initialize featured game rotation
     initFeaturedGames();
 
@@ -80,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize main game
     const game = new Game('gameCanvas');
-});
+}
 
 function initFeaturedGames() {
     const featuredGames = [
@@ -161,3 +181,6 @@ function startGame(game) {
     });
     document.body.appendChild(returnBtn);
 }
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initGameSelection);
