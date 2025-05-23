@@ -4,6 +4,7 @@
  */
 
 // Game category definitions with metadata
+
 const GAMES = {
     action: [
         {
@@ -98,9 +99,27 @@ function initGameSelection() {
     // Initialize game categories
     initGameCategories();
 
-    // Initialize main game
-    const game = new Game('gameCanvas');
+// Initialize main game
+class Game {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.init();
+    }
+
+    init() {
+        // Game initialization logic
+        console.log('Game initialized');
+        // Optional: Beispielhafte Zeichnung
+this.ctx.fillStyle = 'lightblue';
+this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    }
 }
+
+// Diese Instanz wird zum Beispiel in startGame() erstellt:
+// const game = new Game('gameCanvas');
+
 
 function initFeaturedGames() {
     const featuredGames = [
@@ -161,26 +180,101 @@ function initGameCategories() {
 function startGame(game) {
     // Hide main content
     document.querySelector('main').style.display = 'none';
-    
-    // Show game canvas
+
+    // Create and configure the canvas
     const canvas = document.createElement('canvas');
     canvas.id = 'gameCanvas';
+    canvas.width = 800;   // Setze eine sinnvolle Breite
+    canvas.height = 600;  // Setze eine sinnvolle Höhe
     document.body.appendChild(canvas);
-    
-    // Initialize game
-    new Game('gameCanvas');
-    
-    // Add return button
+
+    // Zeichenkontext holen
+    const ctx = canvas.getContext('2d');
+
+    // Beispiel-Hintergrundzeichnung
+    ctx.fillStyle = 'lightblue';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Spiel-Instanz starten (nur wenn Game definiert ist)
+    if (typeof Game === 'function') {
+        new Game('gameCanvas'); // Game-Logik übernimmt ab hier
+    } else {
+        console.warn('Game-Klasse ist nicht definiert.');
+    }
+
+    // "Zurück zum Menü"-Button erstellen
     const returnBtn = document.createElement('button');
     returnBtn.textContent = 'Return to Menu';
     returnBtn.className = 'return-btn';
+    returnBtn.style.position = 'absolute';
+    returnBtn.style.top = '10px';
+    returnBtn.style.right = '10px';
     returnBtn.addEventListener('click', () => {
         canvas.remove();
         returnBtn.remove();
         document.querySelector('main').style.display = 'block';
     });
+
     document.body.appendChild(returnBtn);
 }
+// Event listener for the play button
+
+document.querySelectorAll('.play-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+        const gameCard = event.target.closest('.game-card');
+        const gameName = gameCard.querySelector('h3').textContent;
+        const game = GAMES.find(g => g.name === gameName);
+        startGame(game);
+    });
+}
+);
+// Event listener for the return button
+document.querySelector('.return-btn').addEventListener('click', () => {
+    const canvas = document.getElementById('gameCanvas');
+    if (canvas) {
+        canvas.remove();
+    }
+    const returnBtn = document.querySelector('.return-btn');
+    if (returnBtn) {
+        returnBtn.remove();
+    }
+    document.querySelector('main').style.display = 'block';
+}
+);
+// Event listener for the category buttons
+document.querySelectorAll('.category-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+        const category = event.target.dataset.category;
+        document.querySelectorAll('.game-category').forEach(cat => {
+            cat.style.display = 'none';
+        });
+        document.getElementById(`${category
+        }-games`).style.display = 'block';
+    }
+    );
+}                               
+);  
+// Event listener for the back button   
+document.querySelector('.back-btn').addEventListener('click', () => {
+    document.querySelectorAll('.game-category').forEach(cat => {
+        cat.style.display = 'block';
+    });
+    document.getElementById('gameCanvas').remove();
+    document.querySelector('.return-btn').remove();
+}
+);
+
+// Event listener for the play button       
+
+document.querySelectorAll('.play-btn').forEach(button => {  
+
+    button.addEventListener('click', (event) => {
+
+        const gameCard = event.target.closest('.game-card');
+        const gameName = gameCard.querySelector('h3').textContent;
+        const game = GAMES.find(g => g.name === gameName);
+        startGame(game);    
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', initGameSelection);
+    );}
