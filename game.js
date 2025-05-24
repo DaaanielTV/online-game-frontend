@@ -1,19 +1,16 @@
 class Game {
     constructor(canvasId) {
-        // Initialize engine and managers
         this.engine = new GameEngine(canvasId);
         this.input = new InputManager();
         this.assets = new AssetManager();
-        
-        // Game states
-        this.gameState = 'init'; // States: init, playing, paused, gameOver
+
+        this.gameState = 'init';
         this.score = 0;
         this.highScore = parseInt(localStorage.getItem('highScore')) || 0;
 
-        // Player configuration
         this.player = {
-            x: this.engine.canvas.width / 2,
-            y: this.engine.canvas.height / 2,
+            x: 0,
+            y: 0,
             width: 50,
             height: 50,
             speed: 5,
@@ -22,72 +19,54 @@ class Game {
             powerups: []
         };
 
-        // Game objects
         this.enemies = [];
         this.projectiles = [];
-        
-        // Timing variables
+        this.powerups = [];
+
         this.lastEnemySpawn = 0;
         this.enemySpawnInterval = 2000;
 
-        // Setup and start the game
         this.setupGame();
     }
 
     async setupGame() {
-        // Load game assets
         try {
             await this.assets.loadImage('player', 'enemy/player-avatar.png');
             await this.assets.loadImage('enemy', 'enemy/tricaluctus(underwater-monster).png');
             await this.assets.loadImage('background', 'enemy/game-background.png');
         } catch (error) {
-            console.warn('Failed to load some assets, using fallbacks:', error);
+            console.warn('Failed to load assets:', error);
         }
 
-        // Add background renderer
         this.engine.addEntity({
             render: (ctx) => this.renderBackground(ctx)
         });
 
-        // Add main game entity
         this.engine.addEntity({
             update: (deltaTime) => this.updateGame(deltaTime),
             render: (ctx) => this.renderGame(ctx)
         });
 
-        // Start the game loop
         this.engine.init();
+        // Initialize player's position once the canvas is available
+        this.player.x = this.engine.canvas.width / 2;
+        this.player.y = this.engine.canvas.height / 2;
     }
 
     updateGame(deltaTime) {
-        // Always process input
         this.handleInput();
 
-        // Only update game logic if playing
         if (this.gameState === 'playing') {
-            // Update player position
             this.updatePlayer();
-
-            // Spawn and update enemies
             this.updateEnemies(deltaTime);
-
-            // Update projectiles
             this.updateProjectiles();
-
-            // Check collisions
-            this.checkCollisions();
-
-            // Update power-ups
             this.updatePowerups(deltaTime);
-
-            // Check win/lose conditions
+            this.checkCollisions();
             this.checkGameConditions();
         }
     }
 
     updatePlayer() {
-        // Movement handled in handleInput for playing state
-        // Keep player in bounds
         this.player.x = Math.max(0, Math.min(this.engine.canvas.width - this.player.width, this.player.x));
         this.player.y = Math.max(0, Math.min(this.engine.canvas.height - this.player.height, this.player.y));
     }
@@ -99,12 +78,10 @@ class Game {
             this.lastEnemySpawn = now;
         }
 
-        // Move enemies towards player
         for (let enemy of this.enemies) {
             const dx = this.player.x - enemy.x;
             const dy = this.player.y - enemy.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
             if (distance > 0) {
                 enemy.x += (dx / distance) * enemy.speed;
                 enemy.y += (dy / distance) * enemy.speed;
@@ -114,78 +91,67 @@ class Game {
 
     updateProjectiles() {
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
-            const projectile = this.projectiles[i];
-            
-            // Move projectile
-            projectile.x += projectile.dx * projectile.speed;
-            projectile.y += projectile.dy * projectile.speed;
+            const proj = this.projectiles[i];
+            proj.x += proj.dx * proj.speed;
+            proj.y += proj.dy * proj.speed;
 
-            // Remove if out of bounds
-            if (projectile.x < 0 || projectile.x > this.engine.canvas.width ||
-                projectile.y < 0 || projectile.y > this.engine.canvas.height) {
+            if (proj.x < 0 || proj.x > this.engine.canvas.width || proj.y < 0 || proj.y > this.engine.canvas.height) {
                 this.projectiles.splice(i, 1);
             }
         }
     }
 
     updatePowerups(deltaTime) {
-        this.player.powerups = this.player.powerups.filter(powerup => {
-            powerup.duration -= deltaTime;
-            return powerup.duration > 0;
-        });
-    }
-
-    checkGameConditions() {
-        if (this.player.health <= 0) {
-            this.setState('gameOver');
-        }
-    }
-
-    spawnEnemy() {
-        // Spawn enemy at random edge position
-        let x, y;
-        if (Math.random() < 0.5) {
-            x = Math.random() < 0.5 ? 0 : this.engine.canvas.width;
-            y = Math.random() * this.engine.canvas.height;
-        } else {
-            x = Math.random() * this.engine.canvas.width;
-            y = Math.random() < 0.5 ? 0 : this.engine.canvas.height;
-        }
-
-        this.enemies.push({
-            x: x,
-            y: y,
-            width: 40,
-            height: 40,
-            speed: 2
+        this.player.powerups = this.player.powerups.filter(p => {
+            p.duration -= deltaTime;
+            return p.duration > 0;
         });
     }
 
     checkCollisions() {
-        // Check enemy collisions with player
+        // Projectiles vs enemies
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
-            if (this.checkCollision(this.player, enemy)) {
-                this.player.health -= 10;
-                this.enemies.splice(i, 1);
-                continue;
-            }
-
-            // Check projectile collisions with enemies
             for (let j = this.projectiles.length - 1; j >= 0; j--) {
-                const projectile = this.projectiles[j];
-                if (this.checkCollision(projectile, enemy)) {
+                const proj = this.projectiles[j];
+                if (this.checkCollision(proj, enemy)) {
                     this.enemies.splice(i, 1);
                     this.projectiles.splice(j, 1);
                     this.score += 10;
+                    if (Math.random() < 0.2) {
+                        this.spawnPowerup(enemy.x, enemy.y);
+                    }
                     break;
                 }
-
-                if (Math.random() < 0.2) { // 20% Chance
-    this.spawnPowerup(enemy.x, enemy.y);
-}
-
             }
+        }
+
+        // Enemies vs player
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+            const enemy = this.enemies[i];
+            if (this.checkCollision(this.player, enemy)) {
+                this.player.health -= 20;
+                this.enemies.splice(i, 1);
+            }
+        }
+
+        // Field powerups vs player
+        for (let i = this.powerups.length - 1; i >= 0; i--) {
+            const p = this.powerups[i];
+            if (this.checkCollision(this.player, p)) {
+                this.activatePowerup(p.type);
+                this.powerups.splice(i, 1);
+            }
+        }
+    }
+
+    checkGameConditions() {
+        if (this.player.health <= 0) {
+            if (this.score > this.highScore) {
+                this.highScore = this.score;
+                localStorage.setItem('highScore', this.highScore);
+            }
+            this.setState('gameOver');
         }
     }
 
@@ -197,10 +163,10 @@ class Game {
     }
 
     renderBackground(ctx) {
-        if (this.assets.getImage('background')) {
-            ctx.drawImage(this.assets.getImage('background'), 0, 0, this.engine.canvas.width, this.engine.canvas.height);
+        const bg = this.assets.getImage('background');
+        if (bg) {
+            ctx.drawImage(bg, 0, 0, this.engine.canvas.width, this.engine.canvas.height);
         } else {
-            // Fallback background color
             ctx.fillStyle = 'lightblue';
             ctx.fillRect(0, 0, this.engine.canvas.width, this.engine.canvas.height);
         }
@@ -211,16 +177,13 @@ class Game {
             case 'init':
                 this.renderTitleScreen(ctx);
                 break;
-            
             case 'playing':
                 this.renderGameplay(ctx);
                 break;
-            
             case 'paused':
                 this.renderGameplay(ctx);
                 this.renderPauseOverlay(ctx);
                 break;
-            
             case 'gameOver':
                 this.renderGameplay(ctx);
                 this.renderGameOverScreen(ctx);
@@ -229,61 +192,55 @@ class Game {
     }
 
     renderGameplay(ctx) {
-        // Render player
-        if (this.assets.getImage('player')) {
-            ctx.drawImage(this.assets.getImage('player'), 
-                this.player.x, this.player.y, 
-                this.player.width, this.player.height);
+        const playerImg = this.assets.getImage('player');
+        if (playerImg) {
+            ctx.drawImage(playerImg, this.player.x, this.player.y, this.player.width, this.player.height);
         } else {
             ctx.fillStyle = 'red';
-            ctx.fillRect(this.player.x, this.player.y, 
-                this.player.width, this.player.height);
+            ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
         }
 
-        // Render enemies
+        const enemyImg = this.assets.getImage('enemy');
         for (const enemy of this.enemies) {
-            if (this.assets.getImage('enemy')) {
-                ctx.drawImage(this.assets.getImage('enemy'), 
-                    enemy.x, enemy.y, 
-                    enemy.width, enemy.height);
+            if (enemyImg) {
+                ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
             } else {
                 ctx.fillStyle = 'green';
-                ctx.fillRect(enemy.x, enemy.y, 
-                    enemy.width, enemy.height);
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             }
         }
 
-        // Render projectiles
         ctx.fillStyle = '#ff0';
-        for (const projectile of this.projectiles) {
+        for (const proj of this.projectiles) {
             ctx.beginPath();
-            ctx.arc(projectile.x, projectile.y, 5, 0, Math.PI * 2);
+            ctx.arc(proj.x, proj.y, 5, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // Render game UI
+        for (const p of this.powerups) {
+            ctx.fillStyle = p.color || '#ffaa00';
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+        }
+
         this.renderGameUI(ctx);
     }
 
     renderTitleScreen(ctx) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(0, 0, this.engine.canvas.width, this.engine.canvas.height);
-        
         ctx.fillStyle = '#fff';
         ctx.font = '48px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Survival Game', this.engine.canvas.width / 2, this.engine.canvas.height / 3);
-        
         ctx.font = '24px Arial';
         ctx.fillText('Press SPACE to Start', this.engine.canvas.width / 2, this.engine.canvas.height / 2);
         ctx.fillText('Use WASD or Arrow Keys to move', this.engine.canvas.width / 2, this.engine.canvas.height / 2 + 40);
-        ctx.fillText('High Score: ' + this.highScore, this.engine.canvas.width / 2, this.engine.canvas.height * 2/3);
+        ctx.fillText('High Score: ' + this.highScore, this.engine.canvas.width / 2, this.engine.canvas.height * 2 / 3);
     }
 
     renderPauseOverlay(ctx) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, this.engine.canvas.width, this.engine.canvas.height);
-        
         ctx.fillStyle = '#fff';
         ctx.font = '36px Arial';
         ctx.textAlign = 'center';
@@ -295,88 +252,69 @@ class Game {
     renderGameOverScreen(ctx) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
         ctx.fillRect(0, 0, this.engine.canvas.width, this.engine.canvas.height);
-        
         ctx.fillStyle = '#fff';
         ctx.font = '48px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('GAME OVER', this.engine.canvas.width / 2, this.engine.canvas.height / 3);
-        
         ctx.font = '24px Arial';
         ctx.fillText('Final Score: ' + this.score, this.engine.canvas.width / 2, this.engine.canvas.height / 2);
         ctx.fillText('High Score: ' + this.highScore, this.engine.canvas.width / 2, this.engine.canvas.height / 2 + 40);
-        ctx.fillText('Press SPACE to Restart', this.engine.canvas.width / 2, this.engine.canvas.height * 2/3);
+        ctx.fillText('Press SPACE to Restart', this.engine.canvas.width / 2, this.engine.canvas.height * 2 / 3);
     }
 
     renderGameUI(ctx) {
-        // Health bar
+        const healthPercent = this.player.health / this.player.maxHealth;
         ctx.fillStyle = '#f00';
         ctx.fillRect(10, 10, 200, 20);
         ctx.fillStyle = '#0f0';
-        ctx.fillRect(10, 10, (this.player.health / this.player.maxHealth) * 200, 20);
-
-        // Health text
+        ctx.fillRect(10, 10, 200 * healthPercent, 20);
         ctx.fillStyle = '#000';
         ctx.font = '14px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(`${this.player.health}/${this.player.maxHealth}`, 110, 25);
-
-        // Score
         ctx.fillStyle = '#fff';
         ctx.font = '24px Arial';
         ctx.textAlign = 'left';
         ctx.fillText('Score: ' + this.score, 10, 50);
-
-        // Power-ups
+        ctx.fillText('High Score: ' + this.highScore, 10, 80);
+        
         let powerupX = 10;
-        this.player.powerups.forEach((powerup, index) => {
-            ctx.fillStyle = powerup.color || '#ffaa00';
-            ctx.fillRect(powerupX, 60, 30, 30);
+        this.player.powerups.forEach(p => {
+            ctx.fillStyle = p.color || '#ffaa00';
+            ctx.fillRect(powerupX, 90, 30, 30);
             powerupX += 40;
         });
     }
 
     setState(newState) {
-        const oldState = this.gameState;
+        if (newState === 'gameOver' && this.score > this.highScore) {
+            this.highScore = this.score;
+            localStorage.setItem('highScore', this.highScore);
+        }
+
         this.gameState = newState;
-        
-        switch (newState) {
-            case 'playing':
-                if (oldState === 'paused') {
-                    // Resuming from pause
-                    this.engine.init();
-                } else {
-                    // Starting new game
-                    this.resetGame();
-                    this.engine.init();
-                }
-                break;
-                
-            case 'paused':
-                this.engine.stop();
-                break;
-                
-            case 'gameOver':
-                // Update high score
-                if (this.score > this.highScore) {
-                    this.highScore = this.score;
-                    localStorage.setItem('highScore', this.highScore);
-                }
-                break;
+
+        if (newState === 'playing') {
+            // If coming from paused state, simply restart the engine; otherwise reset the game
+            if (this.gameState !== 'paused') {
+                this.resetGame();
+            }
+            this.engine.init();
+        } else if (newState === 'paused') {
+            this.engine.stop();
         }
     }
 
     resetGame() {
-        // Reset player
         this.player.x = this.engine.canvas.width / 2;
         this.player.y = this.engine.canvas.height / 2;
         this.player.health = this.player.maxHealth;
         this.player.powerups = [];
-
-        // Reset game variables
         this.score = 0;
         this.enemies = [];
         this.projectiles = [];
-        this.lastEnemySpawn = 0;
+        this.powerups = [];
+        this.lastEnemySpawn = Date.now();
     }
 
     togglePause() {
@@ -388,82 +326,53 @@ class Game {
     }
 
     handleInput() {
-        // Global controls
         if (this.input.isKeyPressed('Escape')) {
             if (this.gameState === 'playing' || this.gameState === 'paused') {
                 this.togglePause();
+                this.input.keys.set('Escape', false);
             }
-            // Clear key to prevent multiple toggles
-            this.input.keys.set('Escape', false);
         }
-if (this.input.isKeyPressed('Escape')) {
-    if (this.gameState === 'playing') {
-        this.setState('paused');
-    } else if (this.gameState === 'paused') {
-        this.setState('playing');
-    }
-}
 
-        // State-specific controls
-        switch (this.gameState) {
-            case 'init':
-                if (this.input.isKeyPressed('Space')) {
-                    this.setState('playing');
-                    this.input.keys.set('Space', false);
-                }
-                break;
+        if (this.gameState === 'init' || this.gameState === 'gameOver') {
+            if (this.input.isKeyPressed(' ')) {
+                this.resetGame();
+                this.setState('playing');
+                this.input.keys.set(' ', false);
+            }
+        }
 
-            case 'playing':
-                // Movement
-                if (this.input.isKeyPressed('ArrowUp') || this.input.isKeyPressed('KeyW')) {
-                    this.player.y = Math.max(0, this.player.y - this.player.speed);
-                }
-                if (this.input.isKeyPressed('ArrowDown') || this.input.isKeyPressed('KeyS')) {
-                    this.player.y = Math.min(this.engine.canvas.height - this.player.height, 
-                        this.player.y + this.player.speed);
-                }
-                if (this.input.isKeyPressed('ArrowLeft') || this.input.isKeyPressed('KeyA')) {
-                    this.player.x = Math.max(0, this.player.x - this.player.speed);
-                }
-                if (this.input.isKeyPressed('ArrowRight') || this.input.isKeyPressed('KeyD')) {
-                    this.player.x = Math.min(this.engine.canvas.width - this.player.width, 
-                        this.player.x + this.player.speed);
-                }
+        if (this.gameState === 'playing') {
+            if (this.input.isKeyPressed('ArrowUp') || this.input.isKeyPressed('w')) this.player.y -= this.player.speed;
+            if (this.input.isKeyPressed('ArrowDown') || this.input.isKeyPressed('s')) this.player.y += this.player.speed;
+            if (this.input.isKeyPressed('ArrowLeft') || this.input.isKeyPressed('a')) this.player.x -= this.player.speed;
+            if (this.input.isKeyPressed('ArrowRight') || this.input.isKeyPressed('d')) this.player.x += this.player.speed;
 
-                // Shooting (optional - you can add projectile creation here)
-                if (this.input.isKeyPressed('Space')) {
-                    this.shoot();
-                    this.input.keys.set('Space', false);
-                }
-                break;
-
-            case 'gameOver':
-                if (this.input.isKeyPressed('Space')) {
-                    this.setState('playing');
-                    this.input.keys.set('Space', false);
-                }
-                break;
+            if (this.input.isKeyPressed(' ')) {
+                this.shootProjectile();
+                this.input.keys.set(' ', false);
+            }
         }
     }
 
-shootProjectile() {
-    const dx = 0; // Beispiel: nach oben
-    const dy = -1;
-    this.projectiles.push({
-        x: this.player.x + this.player.width / 2,
-        y: this.player.y,
-        dx: dx,
-        dy: dy,
-        speed: 10
-    });
-}
+    shootProjectile() {
+        const dx = 0;
+        const dy = -1;
+        this.projectiles.push({
+            x: this.player.x + this.player.width / 2,
+            y: this.player.y,
+            dx: dx,
+            dy: dy,
+            speed: 10,
+            width: 5,
+            height: 5
+        });
+    }
+
     shoot() {
-        // Add a simple shooting mechanic
         const mousePos = this.input.getMousePosition();
         const dx = mousePos.x - (this.player.x + this.player.width / 2);
         const dy = mousePos.y - (this.player.y + this.player.height / 2);
         const distance = Math.sqrt(dx * dx + dy * dy);
-
         if (distance > 0) {
             this.projectiles.push({
                 x: this.player.x + this.player.width / 2,
@@ -475,5 +384,42 @@ shootProjectile() {
                 height: 5
             });
         }
+    }
+
+    spawnEnemy() {
+        let x, y;
+        if (Math.random() < 0.5) {
+            x = Math.random() < 0.5 ? 0 : this.engine.canvas.width;
+            y = Math.random() * this.engine.canvas.height;
+        } else {
+            x = Math.random() * this.engine.canvas.width;
+            y = Math.random() < 0.5 ? 0 : this.engine.canvas.height;
+        }
+        this.enemies.push({
+            x: x,
+            y: y,
+            width: 40,
+            height: 40,
+            speed: 2
+        });
+    }
+
+    spawnPowerup(x, y) {
+        this.powerups.push({
+            type: 'heal',
+            duration: 10000,
+            x: x,
+            y: y,
+            width: 30,
+            height: 30,
+            color: '#ffaa00'
+        });
+    }
+
+    activatePowerup(type) {
+        if (type === 'heal') {
+            this.player.health = Math.min(this.player.maxHealth, this.player.health + 20);
+        }
+        // Additional powerup types can be added here
     }
 }
