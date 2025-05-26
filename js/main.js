@@ -3,278 +3,243 @@
  * Defines available games and their metadata
  */
 
-// Game category definitions with metadata
-
 const GAMES = {
     action: [
         {
             name: "Monster Arena",
             description: "Battle various creatures in a customizable arena setting",
-            image: "enemy/monster.png",
+            image: "enemy/player-avatar.png",
             path: "games/action-games/monster-arena"
         },
         {
             name: "Robot Wars",
             description: "Build and battle robots with various parts",
-            image: "enemy/robot.png",
+            image: "enemy/player-avatar.png",
             path: "games/action-games/robot-wars"
         },
         {
-            name: "Ninja Runner",
-            description: "Run, jump, and fight through obstacle courses",
-            image: "enemy/ninja.png",
-            path: "games/action-games/ninja-runner"
+            name: "Space Shooter",
+            description: "Fight through space in this exciting shooter",
+            image: "enemy/space-background.png",
+            path: "games/action-games/space-shooter"
         }
     ],
     puzzle: [
         {
             name: "Color Match",
             description: "Match colors to solve puzzles",
-            image: "enemy/colors.png",
+            image: "enemy/nature-background.png",
             path: "games/puzzle-games/color-match"
-        },
-        {
-            name: "Logic Gates",
-            description: "Build circuits using logic gates",
-            image: "enemy/logic.png",
-            path: "games/puzzle-games/logic-gates"
         },
         {
             name: "Time Shifter",
             description: "Manipulate time to solve puzzles",
-            image: "enemy/time.png",
+            image: "enemy/mystic-forest-background.png",
             path: "games/puzzle-games/time-shifter"
+        },
+        {
+            name: "Logic Gates",
+            description: "Build circuits using logic gates",
+            image: "enemy/wall.png",
+            path: "games/puzzle-games/logic-gates"
         }
     ],
     rpg: [
         {
             name: "Dungeon Crawler",
             description: "Explore dungeons, fight monsters, find treasure",
-            image: "enemy/dungeon.png",
+            image: "enemy/door.png",
             path: "games/rpg-games/dungeon-crawler"
         },
         {
             name: "Monster Tamer",
             description: "Catch and train monsters",
-            image: "enemy/tamer.png",
+            image: "enemy/tricaluctus(underwater-monster).png",
             path: "games/rpg-games/monster-tamer"
         },
         {
-            name: "Pixel Heroes",
-            description: "Classic RPG adventure",
-            image: "enemy/hero.png",
-            path: "games/rpg-games/pixel-heroes"
+            name: "Magic Academy",
+            description: "Learn spells and become a powerful wizard",
+            image: "enemy/mystic-forest-background.png",
+            path: "games/rpg-games/magic-academy"
         }
     ],
     strategy: [
         {
             name: "City Planner",
             description: "Build and manage your own city",
-            image: "enemy/city.png",
+            image: "enemy/city-planner.png",
             path: "games/strategy-games/city-planner"
         },
         {
-            name: "Space Colony",
-            description: "Establish a colony in space",
-            image: "enemy/space.png",
-            path: "games/strategy-games/space-colony"
+            name: "Trade Routes",
+            description: "Establish and manage trade routes between cities",
+            image: "enemy/the-trader.png",
+            path: "games/strategy-games/trade-routes"
         },
         {
-            name: "Trade Routes",
-            description: "Manage trade between cities",
-            image: "enemy/trade.png",
-            path: "games/strategy-games/trade-routes"
+            name: "Space Colony",
+            description: "Build and manage a colony in space",
+            image: "enemy/space-background.png",
+            path: "games/strategy-games/space-colony"
+        }
+    ],
+    simulation: [
+        {
+            name: "Zoo Keeper",
+            description: "Manage a zoo and take care of animals",
+            image: "enemy/elephant.png",
+            path: "games/simulation-games/zoo-keeper"
+        },
+        {
+            name: "Farm Life",
+            description: "Run a farm and grow your agricultural empire",
+            image: "enemy/nature-background.png",
+            path: "games/simulation-games/farm-life"
+        },
+        {
+            name: "Restaurant Rush",
+            description: "Run a busy restaurant and serve customers",
+            image: "enemy/wall.png",
+            path: "games/simulation-games/restaurant-rush"
         }
     ]
 };
 
-/**
- * Initialize the game selection interface
- * Sets up event listeners and loads game data
- */
-function initGameSelection() {
-    // Initialize featured game rotation
-    initFeaturedGames();
-
+document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const tabs = document.querySelectorAll('.tab');
+    const gameCards = document.querySelectorAll('.game-card');
+    const searchInput = document.getElementById('search');
+    const searchBtn = document.getElementById('search-btn');
+    const gameCategories = document.querySelectorAll('.game-category');
+    const gameContainer = document.getElementById('game-container');
+    const gamesList = document.getElementById('games-list');
+    
     // Initialize game categories
     initGameCategories();
-
-// Initialize main game
-class Game {
-    constructor(canvasId) {
-        this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d');
-        this.init();
-    }
-
-    init() {
-        // Game initialization logic
-        console.log('Game initialized');
-        // Optional: Beispielhafte Zeichnung
-this.ctx.fillStyle = 'lightblue';
-this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    }
-}
-
-// Diese Instanz wird zum Beispiel in startGame() erstellt:
-// const game = new Game('gameCanvas');
-
-
-function initFeaturedGames() {
-    const featuredGames = [
-        ...GAMES.action,
-        ...GAMES.puzzle,
-        ...GAMES.rpg,
-        ...GAMES.strategy
-    ];
-    let currentFeaturedIndex = 0;
-
-    function updateFeaturedGame() {
-        const game = featuredGames[currentFeaturedIndex];
-        const featuredDisplay = document.getElementById('featured-display');
-        
-        featuredDisplay.innerHTML = `
-            <div class="featured-game-card">
-                <img src="${game.image}" alt="${game.name}" class="featured-game-img">
-                <h3>${game.name}</h3>
-                <p>${game.description}</p>
-                <button class="play-btn">Play Now</button>
-            </div>
-        `;
-
-        currentFeaturedIndex = (currentFeaturedIndex + 1) % featuredGames.length;
-    }
-
-    // Update featured game initially and every 10 seconds
-    updateFeaturedGame();
-    setInterval(updateFeaturedGame, 10000);
-}
-
-function initGameCategories() {
-    // Initialize each game category
-    for (const [category, games] of Object.entries(GAMES)) {
-        const container = document.querySelector(`#${category}-games .game-grid`);
-        
-        games.forEach(game => {
-            const gameCard = document.createElement('div');
-            gameCard.className = 'game-card';
-            gameCard.innerHTML = `
-                <div class="game-img-container">
-                    <img src="${game.image}" alt="${game.name}" class="game-img">
-                </div>
-                <h3>${game.name}</h3>
-                <p>${game.description}</p>
-                <button class="play-btn">Play</button>
-            `;
-            
-            // Add click handler for play button
-            const playBtn = gameCard.querySelector('.play-btn');
-            playBtn.addEventListener('click', () => startGame(game));
-            
-            container.appendChild(gameCard);
+    
+    // Add animation class to all game cards
+    gameCards.forEach(card => {
+        card.classList.add('fade-in');
+    });
+    
+    // Tab filtering functionality
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const category = tab.getAttribute('data-category');
+            filterGames(category);
         });
-    }
-}
-
-function startGame(game) {
-    // Hide main content
-    document.querySelector('main').style.display = 'none';
-
-    // Create and configure the canvas
-    const canvas = document.createElement('canvas');
-    canvas.id = 'gameCanvas';
-    canvas.width = 800;   // Setze eine sinnvolle Breite
-    canvas.height = 600;  // Setze eine sinnvolle Höhe
-    document.body.appendChild(canvas);
-
-    // Zeichenkontext holen
-    const ctx = canvas.getContext('2d');
-
-    // Beispiel-Hintergrundzeichnung
-    ctx.fillStyle = 'lightblue';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Spiel-Instanz starten (nur wenn Game definiert ist)
-    if (typeof Game === 'function') {
-        new Game('gameCanvas'); // Game-Logik übernimmt ab hier
-    } else {
-        console.warn('Game-Klasse ist nicht definiert.');
-    }
-
-    // "Zurück zum Menü"-Button erstellen
-    const returnBtn = document.createElement('button');
-    returnBtn.textContent = 'Return to Menu';
-    returnBtn.className = 'return-btn';
-    returnBtn.style.position = 'absolute';
-    returnBtn.style.top = '10px';
-    returnBtn.style.right = '10px';
-    returnBtn.addEventListener('click', () => {
-        canvas.remove();
-        returnBtn.remove();
-        document.querySelector('main').style.display = 'block';
     });
-
-    document.body.appendChild(returnBtn);
-}
-// Event listener for the play button
-
-document.querySelectorAll('.play-btn').forEach(button => {
-    button.addEventListener('click', (event) => {
-        const gameCard = event.target.closest('.game-card');
-        const gameName = gameCard.querySelector('h3').textContent;
-        const game = GAMES.find(g => g.name === gameName);
-        startGame(game);
-    });
-}
-);
-// Event listener for the return button
-document.querySelector('.return-btn').addEventListener('click', () => {
-    const canvas = document.getElementById('gameCanvas');
-    if (canvas) {
-        canvas.remove();
+    
+    function filterGames(category) {
+        if (category === 'all') {
+            gameCategories.forEach(section => {
+                section.style.display = 'block';
+            });
+            gameCards.forEach(card => {
+                card.style.display = 'flex';
+            });
+        } else {
+            gameCategories.forEach(section => {
+                if (section.id === `${category}-games`) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
     }
-    const returnBtn = document.querySelector('.return-btn');
-    if (returnBtn) {
-        returnBtn.remove();
-    }
-    document.querySelector('main').style.display = 'block';
-}
-);
-// Event listener for the category buttons
-document.querySelectorAll('.category-btn').forEach(button => {
-    button.addEventListener('click', (event) => {
-        const category = event.target.dataset.category;
-        document.querySelectorAll('.game-category').forEach(cat => {
-            cat.style.display = 'none';
+    
+    // Search functionality
+    function performSearch() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        if (searchTerm === '') {
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelector('[data-category="all"]').classList.add('active');
+            filterGames('all');
+            return;
+        }
+        
+        gameCategories.forEach(section => {
+            section.style.display = 'block';
+            const cards = section.querySelectorAll('.game-card');
+            let hasVisibleCards = false;
+            
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    hasVisibleCards = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            section.style.display = hasVisibleCards ? 'block' : 'none';
         });
-        document.getElementById(`${category
-        }-games`).style.display = 'block';
+        
+        tabs.forEach(t => t.classList.remove('active'));
     }
-    );
-}                               
-);  
-// Event listener for the back button   
-document.querySelector('.back-btn').addEventListener('click', () => {
-    document.querySelectorAll('.game-category').forEach(cat => {
-        cat.style.display = 'block';
+    
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') performSearch();
     });
-    document.getElementById('gameCanvas').remove();
-    document.querySelector('.return-btn').remove();
-}
-);
-
-// Event listener for the play button       
-
-document.querySelectorAll('.play-btn').forEach(button => {  
-
-    button.addEventListener('click', (event) => {
-
-        const gameCard = event.target.closest('.game-card');
-        const gameName = gameCard.querySelector('h3').textContent;
-        const game = GAMES.find(g => g.name === gameName);
-        startGame(game);    
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', initGameSelection);
-    );}
+    
+    function initGameCategories() {
+        // Initialize each game category
+        for (const [category, games] of Object.entries(GAMES)) {
+            const container = document.querySelector(`#${category}-games .game-grid`);
+            if (!container) continue;
+            
+            container.innerHTML = ''; // Clear existing content
+            
+            games.forEach(game => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card fade-in';
+                gameCard.setAttribute('data-category', category);
+                gameCard.innerHTML = `
+                    <div class="game-img-container">
+                        <img src="${game.image}" alt="${game.name}" class="game-img">
+                    </div>
+                    <h3>${game.name}</h3>
+                    <p>${game.description}</p>
+                    <button class="play-btn" data-game="${game.path}">Play Now</button>
+                `;
+                
+                const playBtn = gameCard.querySelector('.play-btn');
+                playBtn.addEventListener('click', () => launchGame(game.path));
+                
+                container.appendChild(gameCard);
+            });
+        }
+    }
+    
+    window.showGameList = function() {
+        gameContainer.style.display = 'none';
+        gamesList.style.display = 'block';
+        if (window.game) {
+            window.game.setState('paused');
+        }
+    };
+    
+    function launchGame(gamePath) {
+        gamesList.style.display = 'none';
+        gameContainer.style.display = 'block';
+        
+        // Initialize the main game for now
+        // In the future, this could load different games based on the path
+        if (!window.game) {
+            window.game = new Game('gameCanvas');
+        } else {
+            window.game.resetGame();
+            window.game.setState('playing');
+        }
+    }
+});
