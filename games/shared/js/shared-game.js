@@ -149,7 +149,7 @@ class Game {
             if (this.gameOver) return;
             
             const now = Date.now();
-            if (now - this.player.lastArrowTime >= 500) { // Arrow cooldown
+            if (now - this.player.lastArrowTime >= 300) { // Arrow cooldown
                 const rect = this.canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
@@ -314,6 +314,19 @@ class Game {
       //////  }
    // }
 ////
+    spawnDoor() {
+        const now = Date.now();
+        if (now - this.lastDoorSpawn >= this.doorSpawnInterval) {
+            const door = new Door(
+                this,
+                Math.random() * (this.canvas.width - 60),
+                Math.random() * (this.canvas.height - 100)
+            );
+            this.doors.push(door);
+            this.lastDoorSpawn = now;
+        }
+    }
+    
     update() {
         if (this.gameOver) {
             document.getElementById('deathScreen').style.display = 'flex';
