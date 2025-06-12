@@ -1,6 +1,6 @@
-# Browser Game Portal
+# Stranded Horizons
 
-A collection of browser-based games built with vanilla JavaScript, HTML5 Canvas, and CSS.
+A browser-based game built with vanilla JavaScript, HTML5 Canvas, and CSS.
 
 ## Features
 
@@ -42,7 +42,7 @@ Each agent has 4 unique abilities:
 - 512MB RAM minimum
 - Stable internet connection for multiplayer
 
-## Server Setup
+## Server Setup // change to only html/css/js without packages 
 1. Install Node.js 14+
 2. Navigate to server directory
 3. Run `npm install`

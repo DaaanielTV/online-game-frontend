@@ -5,7 +5,7 @@ import { GameEngine, Entity, InputManager, AssetManager } from './shared/engine.
  * Contains all game implementations from the games directory
  */
 
-// Base Entity Class - verwendet die shared Entity class
+
 class Character extends Entity {
     constructor(x, y) {
         super(x, y, 40, 40);

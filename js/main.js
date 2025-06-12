@@ -228,18 +228,24 @@ document.addEventListener('DOMContentLoaded', function() {
             window.game.setState('paused');
         }
     };
-    
-    function launchGame(gamePath) {
+      async function launchGame(gamePath) {
         gamesList.style.display = 'none';
         gameContainer.style.display = 'block';
         
-        // Initialize the main game for now
-        // In the future, this could load different games based on the path
-        if (!window.game) {
-            window.game = new Game('gameCanvas');
-        } else {
-            window.game.resetGame();
-            window.game.setState('playing');
+        // Initialize the game manager if it doesn't exist
+        if (!window.gameManager) {
+            window.gameManager = new GameManager('gameCanvas');
+        }
+
+        // Parse the game path to get category and type
+        const [category, gameType] = gamePath.split('/');
+        
+        // Load and start the selected game
+        const success = await window.gameManager.loadGame(category, gameType);
+        if (!success) {
+            console.error('Failed to load game:', gamePath);
+            gamesList.style.display = 'block';
+            gameContainer.style.display = 'none';
         }
     }
 });
