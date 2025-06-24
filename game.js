@@ -1,15 +1,11 @@
-// Main game logic
 class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        
-        // Set up game state
         this.gameState = 'init';
         this.score = 0;
         this.highScore = parseInt(localStorage.getItem('highScore')) || 0;
-        
-        // Set up player
+
         this.player = {
             x: 0,
             y: 0,
@@ -23,24 +19,19 @@ class Game {
             coins: 0
         };
 
-        // Game elements
         this.enemies = [];
         this.projectiles = [];
         this.powerups = [];
 
-        // Timers
         this.lastEnemySpawn = 0;
         this.enemySpawnInterval = 2000;
-        
-        // Load assets
+
         this.images = {};
         this.loadAssets();
-        
-        // Set up input handlers
+
         this.keys = {};
         this.setupInputHandlers();
-        
-        // Start game loop when assets are loaded
+
         this.startGame();
     }
 
@@ -85,7 +76,6 @@ class Game {
         window.addEventListener('resize', () => this.resize());
         this.canvas.addEventListener('click', (e) => this.handleClick(e));
 
-        // Shop buttons
         document.getElementById('upgradeSpeed').addEventListener('click', () => this.upgradeSpeed());
         document.getElementById('upgradeDamage').addEventListener('click', () => this.upgradeDamage());
     }
@@ -106,7 +96,7 @@ class Game {
 
     shoot(targetX, targetY) {
         const now = Date.now();
-        if (now - (this.lastShot || 0) < 300) return; // Shooting cooldown
+        if (now - (this.lastShot || 0) < 300) return;
 
         const dx = targetX - (this.player.x + this.player.width/2);
         const dy = targetY - (this.player.y + this.player.height/2);
@@ -127,14 +117,14 @@ class Game {
     }
 
     startGame() {
-        // Initialize canvas size
+
         this.resize();
 
-        // Place player in center
+
         this.player.x = this.canvas.width / 2 - this.player.width / 2;
         this.player.y = this.canvas.height / 2 - this.player.height / 2;
 
-        // Start game loop
+
         this.lastTimestamp = performance.now();
         requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
     }
@@ -161,17 +151,17 @@ class Game {
     }
 
     updatePlayer(deltaTime) {
-        // Movement
+
         if (this.keys['ArrowUp'] || this.keys['w']) this.player.y -= this.player.speed;
         if (this.keys['ArrowDown'] || this.keys['s']) this.player.y += this.player.speed;
         if (this.keys['ArrowLeft'] || this.keys['a']) this.player.x -= this.player.speed;
         if (this.keys['ArrowRight'] || this.keys['d']) this.player.x += this.player.speed;
 
-        // Keep player in bounds
+
         this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
         this.player.y = Math.max(0, Math.min(this.canvas.height - this.player.height, this.player.y));
 
-        // Regenerate stamina
+
         if (this.player.stamina < 100) {
             this.player.stamina = Math.min(100, this.player.stamina + 0.1);
         }
@@ -183,7 +173,6 @@ class Game {
             proj.x += proj.dx * proj.speed;
             proj.y += proj.dy * proj.speed;
 
-            // Remove projectiles that are off screen
             if (proj.x < 0 || proj.x > this.canvas.width ||
                 proj.y < 0 || proj.y > this.canvas.height) {
                 this.projectiles.splice(i, 1);
@@ -236,7 +225,7 @@ class Game {
                 height: 50,
                 speed: 2,
                 health: 100,
-                value: 10 // coins given when killed
+                value: 10 
             });
 
             this.lastEnemySpawn = now;
@@ -244,7 +233,7 @@ class Game {
     }
 
     checkCollisions() {
-        // Player vs Enemies
+
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
             if (this.checkCollision(this.player, enemy)) {
@@ -257,7 +246,7 @@ class Game {
             }
         }
 
-        // Projectiles vs Enemies
+
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const proj = this.projectiles[i];
             for (let j = this.enemies.length - 1; j >= 0; j--) {
@@ -314,12 +303,12 @@ class Game {
     render() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Draw background
+
         if (this.images.background) {
             this.ctx.drawImage(this.images.background, 0, 0, this.canvas.width, this.canvas.height);
         }
 
-        // Draw enemies
+
         this.enemies.forEach(enemy => {
             if (this.images.enemy) {
                 this.ctx.drawImage(this.images.enemy, enemy.x, enemy.y, enemy.width, enemy.height);
@@ -328,7 +317,6 @@ class Game {
                 this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             }
 
-            // Health bar
             const healthPercent = enemy.health / 100;
             this.ctx.fillStyle = 'red';
             this.ctx.fillRect(enemy.x, enemy.y - 10, enemy.width, 5);
@@ -336,13 +324,13 @@ class Game {
             this.ctx.fillRect(enemy.x, enemy.y - 10, enemy.width * healthPercent, 5);
         });
 
-        // Draw projectiles
+
         this.ctx.fillStyle = 'yellow';
         this.projectiles.forEach(proj => {
             this.ctx.fillRect(proj.x - 5, proj.y - 5, 10, 10);
         });
 
-        // Draw player
+
         if (this.images.player) {
             this.ctx.drawImage(this.images.player, this.player.x, this.player.y, this.player.width, this.player.height);
         } else {
@@ -350,7 +338,6 @@ class Game {
             this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
         }
 
-        // Draw pause overlay
         if (this.gameState === 'paused') {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -388,8 +375,7 @@ class Game {
         this.projectiles = [];
         this.gameState = 'playing';
         document.getElementById('deathScreen').style.display = 'none';
-        
-        // Reset upgrades
+
         this.player.speed = 5;
         this.player.damage = 1;
         document.getElementById('speedPrice').textContent = '100';
@@ -397,7 +383,6 @@ class Game {
     }
 }
 
-// Start game when page loads
 let game;
 window.addEventListener('load', () => {
     game = new Game();
